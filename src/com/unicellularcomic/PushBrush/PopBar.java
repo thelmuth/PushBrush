@@ -28,13 +28,13 @@ public class PopBar {
 		h = inH;
 		displayTicks = inDisplayTicks;
 		
-		rectColor = parent.color(50, 50, 0);
-		buttonBorderColor = parent.color(0);
-		buttonColorPressed = parent.color(0,180,0);
+		rectColor = color(50, 50, 0);
+		buttonBorderColor = 0;
+		buttonColorPressed = color(0,180,0);
 		
 		centerY = y + (h / 2);
 		buttonLoc = w / 2 + x;
-		buttonColor = parent.color(128, 128, 0);
+		buttonColor = color(128, 128, 0);
 		buttonGreen = 128;
 		buttonRed = 128;
 		
@@ -66,10 +66,10 @@ public class PopBar {
 
 			buttonGreen = 255 * getValue();
 			buttonRed = 255 - (255 * getValue());
-			buttonColor = parent.color(buttonRed, buttonGreen, 0);
+			buttonColor = color(buttonRed, buttonGreen, 0);
 		} else {
 			// Use more muted color
-			buttonColor = parent.color(PApplet
+			buttonColor = color(PApplet
 					.constrain(buttonRed - 30, 0, 255), PApplet.constrain(
 					buttonGreen - 30, 0, 255), 0);
 		}
@@ -83,7 +83,6 @@ public class PopBar {
 
 		parent.popStyle();
 	}
-	
 
 	/**
 	 * Returns a value in [0,1] representing the normalized position of the bar
@@ -120,6 +119,21 @@ public class PopBar {
 	boolean mouseOverPopBar() {
 		return (parent.mouseX > x - (h/2)) && (parent.mouseX < x + w + (h/2))
 				&& (parent.mouseY > y) && (parent.mouseY < y + h);
+	}
+
+	/**
+	 * This method is only necessary in Eclipse, and not in Processing.
+	 * It should be removed in Processing.
+	 * @param i
+	 * @param j
+	 * @param k
+	 * @return
+	 */
+	private int color(int i, int j, int k) {
+		return parent.color(i, j, k);
+	}
+	private int color(float i, float j, int k) {
+		return parent.color(i, j, k);
 	}
 
 }
