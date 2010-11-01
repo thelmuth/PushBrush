@@ -78,6 +78,8 @@ public class PushBrush extends PApplet {
 	PImage imgCanvas;
 	
 	public void setup() {
+		frameRate(200);
+		
 		// Background colors
 		instructionsBackgroundColor = color(255, 255, 180);
 		headerBackgroundColor = color(255, 255, 180);
@@ -284,7 +286,7 @@ public class PushBrush extends PApplet {
 				+ ga.GetPopulationSize(), 220, footerYStart + 23);
 	
 		textAlign(LEFT);
-		text("Time Step: " + brush.t, 450, footerYStart + 23);
+		text("Time Step: " + ((int)brush.t), 450, footerYStart + 23);
 	
 		// Buttons
 		helpButton.render();
@@ -332,6 +334,10 @@ public class PushBrush extends PApplet {
 	 * @param newBrush
 	 */
 	private void updateBrush(BrushAttributes newBrush) {
+		
+		// Use this if you want random brush wiggles.
+		/*newBrush.x += RNG.nextInt(3) - 1;
+		newBrush.y += RNG.nextInt(3) - 1;*/
 	
 		// Define some constants
 		float minRadius = 1;
