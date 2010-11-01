@@ -24,6 +24,8 @@ public class PushBrush extends PApplet {
 	static float minFitness = 0;
 	static float maxFitness = 500;
 	
+	int paintsPerFrame;
+	
 	// Instructions screen
 	static int instructionsBackgroundColor;
 	boolean instructionsScreen, mainScreen;
@@ -78,14 +80,15 @@ public class PushBrush extends PApplet {
 	PImage imgCanvas;
 	
 	public void setup() {
-		frameRate(200);
+		frameRate(500);
+		paintsPerFrame = 100;
 		
 		// Background colors
 		instructionsBackgroundColor = color(255, 255, 180);
 		headerBackgroundColor = color(255, 255, 180);
 	
 		// General setup
-		size(canvasWidth, headerHeight + canvasHeight + footerHeight);
+		size(700, 670);
 		background(instructionsBackgroundColor);
 	
 		// Fonts
@@ -231,13 +234,15 @@ public class PushBrush extends PApplet {
 					initb, inittimeStep);
 		}
 		
-		// Get the next brush from the current individual
-		BrushAttributes newBrush = ga.getNextBrush(brush);
-	
-		// Update and paint the next brush
-		updateBrush(newBrush);
-		paintBrush();
-	
+		for (int i = 0; i < paintsPerFrame; i++) {
+			// Get the next brush from the current individual
+			BrushAttributes newBrush = ga.getNextBrush(brush);
+
+			// Update and paint the next brush
+			updateBrush(newBrush);
+			paintBrush();
+		}
+		
 		// //////// Create the header //////////
 		fill(headerBackgroundColor);
 		noStroke();
@@ -421,7 +426,7 @@ public class PushBrush extends PApplet {
 		ins += "each individual based on how much you like its ";
 		ins += "characteristics. This gives a rating, or fitness, ";
 		ins += "to the individual, so that evolution knows how ";
-		ins += "frequently to use it while creating the next";
+		ins += "frequently to use it while creating the next ";
 		ins += "generation.\n\n";
 	
 		ins += "    To rate the painter that is currently painting ";
@@ -468,7 +473,7 @@ public class PushBrush extends PApplet {
 	}
 	
 	private void setupshowBestBrushButton() {
-		String textHelp = "Show Best Evolved Brush";
+		String textHelp = "CURRENTLY UNIMPLEMENTED";//"Show Best Evolved Brush";
 	
 		int x = helpButton.x + helpButton.w + 10;
 		int y = height - 35;
@@ -481,7 +486,7 @@ public class PushBrush extends PApplet {
 	}
 	
 	private void setupshowBestCodeButton() {
-		String textHelp = "Show Best Evolved Code";
+		String textHelp = "CURRENTLY UNIMPLEMENTED";//"Show Best Evolved Code";
 	
 		int x = showBestBrushButton.x + showBestBrushButton.w + 10;
 		int y = height - 35;
