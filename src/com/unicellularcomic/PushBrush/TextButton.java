@@ -14,7 +14,7 @@ public class TextButton {
 	int borderColor, textColor, backgroundColor, backgroundColorHover;
 	int backgroundColorPress;
 	
-	boolean dragging, clickedButton ;
+	private boolean dragging, clickedButton ;
 
 	TextButton(PApplet inParent, PFont inFont, String inText, int inX, int inY,
 			int inXPadding, int inYPadding, int inTextHeight,

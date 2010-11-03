@@ -3,6 +3,7 @@ package com.unicellularcomic.PushBrush;
 import processing.core.*;
 
 import java.util.Random;
+import java.awt.TextArea;
 import org.spiderland.Psh.*;
 import org.spiderland.Psh.PushBrush.BrushAttributes;
 import org.spiderland.Psh.PushBrush.PushBrushPC;
@@ -14,7 +15,7 @@ public class PushBrush extends PApplet {
 	static int canvasWidth = 700;
 	static int canvasHeight = 500;
 	static int headerHeight = 100;
-	static int footerHeight = 70;
+	static int footerHeight = 105;
 	static int canvasYStart = headerHeight;
 	static int footerYStart = headerHeight + canvasHeight;
 	
@@ -26,15 +27,22 @@ public class PushBrush extends PApplet {
 	
 	int paintsPerFrame;
 	
-	// Instructions screen
-	static int instructionsBackgroundColor;
-	boolean instructionsScreen, mainScreen;
+	// Different screen variables
+	boolean instructionsScreen, mainScreen, textScreen, freeDrawScreen;
+	
+	// TextArea for input and output of individual code
+	TextArea codeTextArea;
+	boolean codeTextAreaVisible;
+	
+	// Program to be used by free draw
+	Program freeDrawProgram;
 	
 	// Random number generator
 	Random RNG;
 	
 	// //////// Brush properties /////////
 	BrushAttributes brush;
+	BrushAttributes freeDrawBrush;
 	
 	// Location and velocity of the brush
 	float initx;
@@ -53,12 +61,18 @@ public class PushBrush extends PApplet {
 	
 	// Sliders and buttons
 	PopBar fitnessBar;
-	// HorizontalSlider fitnessSlider; //No longer used, but keep just in case
-	
 	TextButton helpButton;
 	TextButton mainScreenButton;
-	TextButton showBestBrushButton;
-	TextButton showBestCodeButton;
+	TextButton brushCodeButton;
+	TextButton enterCodeButton;
+	TextButton bestBrushPaintButton;
+	TextButton bestBrushCodeButton;
+	boolean genZeroError;
+	
+	TextButton codeViewBrushButton;
+	TextButton codeBackToMainButton;
+	TextButton freeBrushCodeButton;
+	boolean illegalBrushError;
 	
 	int buttonxPadding;
 	int buttonyPadding;
@@ -80,16 +94,15 @@ public class PushBrush extends PApplet {
 	PImage imgCanvas;
 	
 	public void setup() {
+		
+		// General setup
+		size(700, 705);
 		frameRate(500);
 		paintsPerFrame = 100;
 		
 		// Background colors
-		instructionsBackgroundColor = color(255, 255, 180);
 		headerBackgroundColor = color(255, 255, 180);
-	
-		// General setup
-		size(700, 670);
-		background(instructionsBackgroundColor);
+		background(headerBackgroundColor);
 	
 		// Fonts
 		fontTitle = loadFont("Leelawadee-Bold-28.vlw");
@@ -102,6 +115,11 @@ public class PushBrush extends PApplet {
 		// Initialize instructions screen
 		instructionsScreen = true;
 		mainScreen = false;
+		textScreen = false;
+		freeDrawScreen = false;
+		
+		genZeroError = false;
+		illegalBrushError = false;
 	
 		// New brush parameters, so that each brush starts the same
 		initradius = 15;
@@ -134,13 +152,23 @@ public class PushBrush extends PApplet {
 		// Setup sliders and buttons
 		// setupSlider();
 		setupFitnessBar();
-		setupHelpButton();
 		setupMainScreenButton();
-		setupshowBestBrushButton();
-		setupshowBestCodeButton();
+		setupbrushCodeButton();
+		setupenterCodeButton();
+		setupHelpButton();
+		setupbestBrushPaintButton();
+		setupbestBrushCodeButton();
+		
+		setupcodeViewBrushButton();
+		setupcodeBackToMainButton();
+		setupfreeBrushCodeButton();
 	
 		// Setup canvas image
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
+		
+		// Setup textArea
+		codeTextArea = new TextArea("Starting text here 2999", 30, 90,
+				TextArea.SCROLLBARS_VERTICAL_ONLY);
 	
 		// Setup PushBrushPC
 		try {
@@ -175,72 +203,251 @@ public class PushBrush extends PApplet {
 	
 		// Display instructions screen if necessary
 		if (instructionsScreen) {
-			background(instructionsBackgroundColor);
-	
-			// Title
-			fill(0);
-			textAlign(CENTER);
-			textFont(fontTitle);
-			text("PushBrush Instructions", width / 2, 40);
-	
-			// Instructions
-			textAlign(LEFT);
-			textFont(fontTextBold);
-			String insString = getInstructions();
-			text(insString, 20, 60, width - 40, height - 100);
-	
-			// Main Screen button
-			mainScreenButton.render();
-	
-			if (mainScreenButton.clicked()) {
-				instructionsScreen = false;
-				mainScreen = true;
-	
-				image(imgCanvas, 0, canvasYStart);
-			}
+			drawInstructionsScreen();
 			return;
 		}
 	
-		if (mainScreen && helpButton.clicked()) {
-			// Capture canvas image before going to instructions screen
-			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-	
-			instructionsScreen = true;
-			mainScreen = false;
+		// Display text area screen if necessary
+		if(textScreen){
+			drawTextScreen();
 			return;
-		}
-	
-		if (mainScreen && fitnessBar.clicked()) {
-			// NOTE: Fitness ranges from minFitness to maxFitness, where lower
-			// is better. This is because PshGP uses errors instead of fitness,
-			// where lower error is better.
-	
-			float fitness = maxFitness
-					- ((fitnessBar.getValue() * (maxFitness - minFitness)) + minFitness);
-	
-			try {
-				ga.RunUntilHumanEvaluation(fitness);
-			} catch (Exception e) {
-				println("There was a problem:");
-				println(e);
-			}
-	
-			// Reset some necessary parameters
-			background(0);
-			imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
-	
-			// Reset brush
-			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep);
 		}
 		
+		if(freeDrawScreen){
+			drawFreeDrawScreen();
+			return;
+		}
+	
+		// Display main screen
+		if (mainScreen) {
+			// Check for main screen button clicks
+			if (mainScreenButtonListener()) {
+				return;
+			}
+	
+			// Draw main screen
+			drawNormalMainScreen();
+		}
+		
+	}
+
+	public void mousePressed() {
+		if (instructionsScreen) {
+			mainScreenButton.pressed();
+		}
+		if (mainScreen) {
+			fitnessBar.pressed();
+			helpButton.pressed();
+			brushCodeButton.pressed();
+			enterCodeButton.pressed();
+			bestBrushPaintButton.pressed();
+			bestBrushCodeButton.pressed();
+		}
+		if (textScreen){
+			codeViewBrushButton.pressed();
+			codeBackToMainButton.pressed();
+		}
+		if (freeDrawScreen){
+			codeBackToMainButton.pressed();
+			freeBrushCodeButton.pressed();
+		}
+	}
+	
+	public void mouseReleased() {
+		if (instructionsScreen) {
+			mainScreenButton.released();
+		}
+		if (mainScreen) {
+			fitnessBar.released();
+			helpButton.released();
+			brushCodeButton.released();
+			enterCodeButton.released();
+			bestBrushPaintButton.released();
+			bestBrushCodeButton.released();
+		}
+		if (textScreen){
+			codeViewBrushButton.released();
+			codeBackToMainButton.released();
+		}
+		if (freeDrawScreen){
+			codeBackToMainButton.released();
+			freeBrushCodeButton.released();
+		}
+	}
+	
+	public void mouseDragged() {
+	}
+	
+	
+	/**
+	 * Updates brush for the next time step.
+	 * 
+	 * @param brushToUpdate - Brush to update with newBrush attributes
+	 * @param newBrush - New brush attributes
+	 */
+	private void updateBrush(BrushAttributes brushToUpdate, BrushAttributes newBrush) {
+		// Define some constants
+		float minRadius = 1;
+		float maxRadius = 100;
+	
+		// Update brush attributes
+		//brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
+		while(newBrush.radius < minRadius){
+			newBrush.radius += maxRadius - minRadius;
+		}
+		brushToUpdate.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius)) + minRadius;
+		
+		float minX = -(canvasWidth / 2);
+		float maxX = canvasWidth - (canvasWidth / 2);
+		//brush.x = constrain(newBrush.x, minX, maxX);
+		while(newBrush.x < minX){
+			newBrush.x += maxX - minX;
+		}
+		brushToUpdate.x = ((newBrush.x - minX) % (maxX - minX)) + minX;
+	
+		float minY =  -(canvasHeight / 2);
+		float maxY = canvasHeight - (canvasHeight / 2);
+		//brush.y = constrain(newBrush.y, minY, maxY);
+		while(newBrush.y < minY){
+			newBrush.y += maxY - minY;
+		}
+		brushToUpdate.y = ((newBrush.y - minY) % (maxY - minY)) + minY;
+		
+		// Use these if you want wrapping colors
+		while (newBrush.red < 0) {
+			newBrush.red += 256;
+		}
+		brushToUpdate.red = newBrush.red % 256;
+		while (newBrush.green < 0) {
+			newBrush.green += 256;
+		}
+		brushToUpdate.green = newBrush.green % 256;
+		while (newBrush.blue < 0) {
+			newBrush.blue += 256;
+		}
+		brushToUpdate.blue = newBrush.blue % 256;
+	
+		/*
+		 * // Use these if you want non-wrapping colors brush.red =
+		 * constrain(newBrush.red, 0, 255); brush.green =
+		 * constrain(newBrush.green, 0, 255); brush.blue =
+		 * constrain(newBrush.blue, 0, 255);
+		 */
+	
+		brushToUpdate.t++;
+	}
+
+	/**
+	 * Paints the brush to the screen.
+	 * 
+	 * @param paintBrush
+	 */
+	private void paintBrush(BrushAttributes paintBrush) {
+		pushStyle();
+		smooth();
+	
+		fill(paintBrush.red, paintBrush.green, paintBrush.blue);
+		noStroke();
+		ellipseMode(CENTER);
+		ellipse(paintBrush.x + (canvasWidth / 2), paintBrush.y + canvasYStart
+				+ (canvasHeight / 2), paintBrush.radius * 2, paintBrush.radius * 2);
+	
+		noSmooth();
+		popStyle();
+	}
+	
+	
+	/**
+	 * Tests each main screen button to see if it was clicked.
+	 * 
+	 * @return true if draw() needs to return
+	 * 		   false if draw() can continue
+	 */
+	private boolean mainScreenButtonListener() {
+		if(brushCodeButton.clicked()){
+			// Capture canvas image before going to text area screen
+			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+			
+			codeTextArea.setText(ga.GetCurrentIndividualCode());
+			textScreen = true;
+			mainScreen = false;
+			return true;
+		}
+		
+		if(enterCodeButton.clicked()){
+			// Capture canvas image before going to text area screen
+			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+			
+			codeTextArea.setText("");
+			textScreen = true;
+			mainScreen = false;
+			return true;
+		}
+		
+		if(bestBrushPaintButton.clicked()){
+			if(ga.GetGenerationCount() <= 0){
+				showGenerationZeroError();
+				return false;
+			}
+			
+			// Capture canvas image before going to text area screen
+			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+			freeDrawProgram = ga.GetPrevGenBestIndividual()._program;
+			
+			// Reset some necessary parameters
+			background(0);
+			freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
+					initb, inittimeStep);
+			
+			freeDrawScreen = true;
+			mainScreen = false;
+			return true;
+		}
+		
+		if(bestBrushCodeButton.clicked()){
+			if(ga.GetGenerationCount() <= 0){
+				showGenerationZeroError();
+				return false;
+			}
+			
+			// Capture canvas image before going to text area screen
+			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+			
+			codeTextArea.setText(ga.GetPrevGenBestIndividual().toString());
+			textScreen = true;
+			mainScreen = false;
+			return true;
+		}
+		
+		if (helpButton.clicked()) {
+			// Capture canvas image before going to instructions screen
+			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+			
+			instructionsScreen = true;
+			mainScreen = false;
+			return true;
+		}
+		
+		if (fitnessBar.clicked()) {
+			drawFitnessBarClicked();
+		}
+	
+		// If here, no buttons clicked that need to return, so return false.
+		return false;
+	}
+	
+	/**
+	 * The main drawing method for drawing to the main screen.
+	 */
+	private void drawNormalMainScreen() {
+		// Print brush number of times equal to paintsPerFrame		
 		for (int i = 0; i < paintsPerFrame; i++) {
 			// Get the next brush from the current individual
-			BrushAttributes newBrush = ga.getNextBrush(brush);
-
+			BrushAttributes newBrush = ga.GetNextBrush(brush);
+	
 			// Update and paint the next brush
-			updateBrush(newBrush);
-			paintBrush();
+			updateBrush(brush, newBrush);
+			paintBrush(brush);
 		}
 		
 		// //////// Create the header //////////
@@ -292,122 +499,256 @@ public class PushBrush extends PApplet {
 	
 		textAlign(LEFT);
 		text("Time Step: " + ((int)brush.t), 450, footerYStart + 23);
+		
+		// Text for best brush
+		textAlign(LEFT);
+		textFont(fontTextBold);
+		text("Best Brush of Previous Generation: ", 15, height - 14);
 	
 		// Buttons
 		helpButton.render();
-		showBestBrushButton.render();
-		showBestCodeButton.render();
-	
-	
-	}
-	
-	public void mousePressed() {
-		if (mainScreen) {
-			// fitnessSlider.pressed();
-			fitnessBar.pressed();
-			helpButton.pressed();
-			showBestBrushButton.pressed();
-			showBestCodeButton.pressed();
-		}
-		if (instructionsScreen) {
-			mainScreenButton.pressed();
-		}
-	}
-	
-	public void mouseReleased() {
-		if (mainScreen) {
-			// fitnessSlider.released();
-			fitnessBar.released();
-			helpButton.released();
-			showBestBrushButton.released();
-			showBestCodeButton.released();
-		}
-		if (instructionsScreen) {
-			mainScreenButton.released();
-		}
-	}
-	
-	public void mouseDragged() {
-		/*
-		 * if (mainScreen) { fitnessSlider.dragged(); }
-		 */
-	}
-	
-	/**
-	 * Updates brush for the next time step.
-	 * 
-	 * @param newBrush
-	 */
-	private void updateBrush(BrushAttributes newBrush) {
+		brushCodeButton.render();
+		enterCodeButton.render();
+		bestBrushPaintButton.render();
+		bestBrushCodeButton.render();
 		
-		// Use this if you want random brush wiggles.
-		/*newBrush.x += RNG.nextInt(3) - 1;
-		newBrush.y += RNG.nextInt(3) - 1;*/
-	
-		// Define some constants
-		float minRadius = 1;
-		float maxRadius = 100;
-	
-		// Update brush attributes
-		//brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
-		while(newBrush.radius < minRadius){
-			newBrush.radius += maxRadius - minRadius;
+		// Generation Zero Error
+		if(genZeroError && ga.GetGenerationCount() <= 0){
+			showGenerationZeroError();
 		}
-		brush.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius)) + minRadius;
-		
-		float minX = -(canvasWidth / 2);
-		float maxX = canvasWidth - (canvasWidth / 2);
-		//brush.x = constrain(newBrush.x, minX, maxX);
-		while(newBrush.x < minX){
-			newBrush.x += maxX - minX;
-		}
-		brush.x = ((newBrush.x - minX) % (maxX - minX)) + minX;
-	
-		float minY =  -(canvasHeight / 2);
-		float maxY = canvasHeight - (canvasHeight / 2);
-		//brush.y = constrain(newBrush.y, minY, maxY);
-		while(newBrush.y < minY){
-			newBrush.y += maxY - minY;
-		}
-		brush.y = ((newBrush.y - minY) % (maxY - minY)) + minY;
-		
-		// Use these if you want wrapping colors
-		while (newBrush.red < 0) {
-			newBrush.red += 256;
-		}
-		brush.red = newBrush.red % 256;
-		while (newBrush.green < 0) {
-			newBrush.green += 256;
-		}
-		brush.green = newBrush.green % 256;
-		while (newBrush.blue < 0) {
-			newBrush.blue += 256;
-		}
-		brush.blue = newBrush.blue % 256;
-	
-		/*
-		 * // Use these if you want non-wrapping colors brush.red =
-		 * constrain(newBrush.red, 0, 255); brush.green =
-		 * constrain(newBrush.green, 0, 255); brush.blue =
-		 * constrain(newBrush.blue, 0, 255);
-		 */
-	
-		brush.t++;
 	}
 	
-	/**
-	 * Paints the brush to the screen.
-	 */
-	private void paintBrush() {
-		pushStyle();
+	private void drawInstructionsScreen() {
+		if (mainScreenButton.clicked()) {
+			instructionsScreen = false;
+			mainScreen = true;
 	
-		fill(brush.red, brush.green, brush.blue);
+			image(imgCanvas, 0, canvasYStart);
+			return;
+		}
+		
+		background(headerBackgroundColor);
+		
+		// Title
+		fill(0);
+		textAlign(CENTER);
+		textFont(fontTitle);
+		text("PushBrush Instructions", width / 2, 40);
+	
+		// Instructions
+		textAlign(LEFT);
+		textFont(fontTextBold);
+		String insString = getInstructions();
+		text(insString, 20, 60, width - 40, height - 100);
+	
+		// Main Screen button
+		mainScreenButton.render();
+	}
+	
+	private void drawFitnessBarClicked() {			
+		// NOTE: Fitness ranges from minFitness to maxFitness, where lower
+		// is better. This is because PshGP uses errors instead of fitness,
+		// where lower error is better.
+	
+		float fitness = maxFitness
+				- ((fitnessBar.getValue() * (maxFitness - minFitness)) + minFitness);
+		
+		try {
+			ga.RunUntilHumanEvaluation(fitness);
+		} catch (Exception e) {
+			println("There was a problem:");
+			println(e);
+		}
+	
+		// Reset some necessary parameters
+		background(0);
+		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
+		brush = new BrushAttributes(initx, inity, initradius, initr, initg,
+				initb, inittimeStep);
+	}
+	
+	private void drawTextScreen() {
+		if(codeBackToMainButton.clicked()){
+			textScreen = false;
+			mainScreen = true;
+			illegalBrushError = false;
+	
+			this.remove(codeTextArea);
+			this.validate();
+			codeTextAreaVisible = false;
+			
+			image(imgCanvas, 0, canvasYStart);
+			return;
+		}
+		if(codeViewBrushButton.clicked()){
+			// First, test that input text is a legal Push program
+			String inputProgram = codeTextArea.getText();
+			boolean programIsLegal = checkForLegalPushProgram(inputProgram);
+			if(!programIsLegal){
+				illegalBrushError = true;	
+			}
+			else{
+				illegalBrushError = false;
+				textScreen = false;
+				freeDrawScreen = true;
+
+				this.remove(codeTextArea);
+				this.validate();
+				codeTextAreaVisible = false;
+
+				try {
+					freeDrawProgram = new Program(inputProgram);
+				} catch (Exception e) {
+					System.out
+							.println("There was an error initializing a user-input program.");
+					System.out.println(e);
+				}
+				
+				// Reset some necessary parameters
+				background(0);
+				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
+						initb, inittimeStep);
+				
+				return;
+			}
+		}
+		
+		background(headerBackgroundColor);
+		
+		if(!codeTextAreaVisible){
+			this.add(codeTextArea);
+			this.validate();
+			codeTextAreaVisible = true;
+		}
+	
+		// Notes
+		String notesText = "    You can copy and paste Push code here to save" +
+				" and load brush code. This is useful if you display the code" +
+				" of a brush you like, and then later want to see it again" +
+				" or show someone. Just paste in the code, and click \"Paint" +
+				" Using This Code\".";
+		textFont(fontTextBold);
+		textAlign(LEFT);
+		fill(0);
+		text(notesText, 20, 500, width - 40, 150);
+		
+		// Illegal Push Code Error
+		if(illegalBrushError){
+			textFont(fontTextBold);
+			textAlign(CENTER);
+			fill(255,0,0);
+			text("Entered text is not a legal Push program.", width / 2, 650);
+		}
+	
+		// Buttons
+		codeViewBrushButton.render();
+		codeBackToMainButton.render();
+		
+	}
+
+	private void drawFreeDrawScreen() {
+		if (codeBackToMainButton.clicked()) {
+			freeDrawScreen = false;
+			mainScreen = true;
+
+			image(imgCanvas, 0, canvasYStart);
+			return;
+		}
+		if (freeBrushCodeButton.clicked()) {
+			freeDrawScreen = false;
+			textScreen = true;
+			
+			codeTextArea.setText(freeDrawProgram.toString());
+			return;
+		}
+		
+		// Print brush number of times equal to paintsPerFrame		
+		for (int i = 0; i < paintsPerFrame; i++) {
+			// Get the next brush from the current individual
+			BrushAttributes newBrush = ga.GetNextBrushFromProgram(
+					freeDrawBrush, freeDrawProgram);
+
+			// Update and paint the next brush
+			updateBrush(freeDrawBrush, newBrush);
+			paintBrush(freeDrawBrush);
+		}
+		
+		// //////// Create the header //////////
+		fill(headerBackgroundColor);
 		noStroke();
-		ellipseMode(CENTER);
-		ellipse(brush.x + (canvasWidth / 2), brush.y + canvasYStart
-				+ (canvasHeight / 2), brush.radius * 2, brush.radius * 2);
+		rect(0, 0, width, headerHeight);
+
+		// Title
+		fill(0);
+		textFont(fontTitle);
+		textAlign(CENTER);
+		text("PushBrush", width / 2, 30);
+	
+		// //////// Create the footer //////////
+		// Footer background
+		fill(headerBackgroundColor);
+		noStroke();
+		rect(0, footerYStart, width, footerHeight);
+		
+		// Display information
+		textAlign(LEFT);
+		textFont(fontTextBold);
+		fill(0);
+		text("Time Step: " + ((int)freeDrawBrush.t), 450, footerYStart + 23);
+		
+		// Buttons
+		codeBackToMainButton.render();
+		freeBrushCodeButton.render();
+		
+	}
+	
+	/**
+	 * Displays an error if certain buttons are pressed during generation 0
+	 */
+	private void showGenerationZeroError() {
+		genZeroError = true;
+		
+		pushStyle();
+		fill(255, 0, 0);
+		textFont(fontTextBold);
+		text("Wait Until Gen 1", bestBrushCodeButton.x
+				+ bestBrushCodeButton.w + 10, height - 14);
 	
 		popStyle();
+	}
+	
+
+	/**
+	 * Checks to make sure the input string represents a legal Push program.
+	 * @param inputProgram
+	 * @return
+	 */
+	private boolean checkForLegalPushProgram(String inProgram) {
+		int unmatchedLeftParen = 0;
+		inProgram = inProgram.trim();
+		
+		if(inProgram.length() < 2){
+			return false;
+		}
+		
+		for(int i = 0; i < inProgram.length(); i++){
+			char c = inProgram.charAt(i);
+			if(c == '('){
+				unmatchedLeftParen++;
+			}
+			if(c == ')'){
+				unmatchedLeftParen--;
+			}
+			if(i + 1 < inProgram.length() && unmatchedLeftParen <= 0){
+				return false;
+			}
+		}
+		
+		if (unmatchedLeftParen == 0){
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private String getInstructions() {
@@ -439,65 +780,7 @@ public class PushBrush extends PApplet {
 		return ins;
 	}
 	
-	/*
-	 * private void setupSlider() { int sliderX = 20; int sliderY = 70; int
-	 * sliderW = 520; int sliderH = 20; int sliderBarW = 30; int sliderLineColor
-	 * = 0; int sliderBarColor = color(255, 255, 0); int sliderBarColorHover =
-	 * color(230, 230, 0); int sliderBarColorPressed = color(180, 180, 0);
-	 * fitnessSlider = new HorizontalSlider(this, sliderX, sliderY, sliderW,
-	 * sliderH, sliderBarW, sliderLineColor, sliderBarColor,
-	 * sliderBarColorHover, sliderBarColorPressed); }
-	 */
-	
-	private void setupFitnessBar() {
-		int sliderX = 80;
-		int sliderY = 40;
-		int sliderW = width - (2 * sliderX);
-		int sliderH = 40;
-		boolean displayTicks = true;
-		fitnessBar = new PopBar(this, sliderX, sliderY, sliderW, sliderH,
-				displayTicks);
-	}
-	
-	private void setupHelpButton() {
-		String textHelp = "Help";
-	
-		int x = 10;
-		int y = height - 35;
-		int textH = 18;
-	
-		helpButton = new TextButton(this, fontTextBold, textHelp, x, y,
-				buttonxPadding, buttonyPadding, textH, buttonborderColor,
-				buttontextColor, buttonbackgroundColor,
-				buttonbackgroundColorHover, buttonbackgroundColorPress);
-	}
-	
-	private void setupshowBestBrushButton() {
-		String textHelp = "CURRENTLY UNIMPLEMENTED";//"Show Best Evolved Brush";
-	
-		int x = helpButton.x + helpButton.w + 10;
-		int y = height - 35;
-		int textH = 18;
-	
-		showBestBrushButton = new TextButton(this, fontTextBold, textHelp, x,
-				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
-				buttontextColor, buttonbackgroundColor,
-				buttonbackgroundColorHover, buttonbackgroundColorPress);
-	}
-	
-	private void setupshowBestCodeButton() {
-		String textHelp = "CURRENTLY UNIMPLEMENTED";//"Show Best Evolved Code";
-	
-		int x = showBestBrushButton.x + showBestBrushButton.w + 10;
-		int y = height - 35;
-		int textH = 18;
-	
-		showBestCodeButton = new TextButton(this, fontTextBold, textHelp, x, y,
-				buttonxPadding, buttonyPadding, textH, buttonborderColor,
-				buttontextColor, buttonbackgroundColor,
-				buttonbackgroundColorHover, buttonbackgroundColorPress);
-	}
-	
+	// Instructions Screen setup
 	private void setupMainScreenButton() {
 		String textMain = "Go Evolve Painters!";
 	
@@ -510,5 +793,128 @@ public class PushBrush extends PApplet {
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 	}
+	
+	// Main Screen setup
+	private void setupFitnessBar() {
+		int sliderX = 80;
+		int sliderY = 40;
+		int sliderW = width - (2 * sliderX);
+		int sliderH = 40;
+		boolean displayTicks = true;
+		fitnessBar = new PopBar(this, sliderX, sliderY, sliderW, sliderH,
+				displayTicks);
+	}
+	
+	private void setupbrushCodeButton() {
+		String buttonText = "Display This Brush's Code";
+	
+		int x = 10;
+		int y = height - 70;
+		int textH = 18;
+	
+		brushCodeButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+	
+	private void setupenterCodeButton() {
+		String textHelp = "Enter Code For Brush";//"Show Best Evolved Code";
+	
+		int x = brushCodeButton.x + brushCodeButton.w + 10;
+		int y = height - 70;
+		int textH = 18;
+	
+		enterCodeButton = new TextButton(this, fontTextBold, textHelp, x, y,
+				buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+	
+	private void setupHelpButton() {
+		String textHelp = "Help";
+	
+		int x = enterCodeButton.x + enterCodeButton.w + 10;
+		int y = height - 70;
+		int textH = 18;
+	
+		helpButton = new TextButton(this, fontTextBold, textHelp, x, y,
+				buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+		
+		helpButton.x = width - 10 - helpButton.w;
+	}
+	
+	private void setupbestBrushPaintButton() {
+		String buttonText = "Paint";
+	
+		textFont(fontTextBold);
+		
+		int x = 20 + (int)textWidth("Best Brush of Previous Generation: ");
+		int y = height - 35;
+		int textH = 18;
+	
+		bestBrushPaintButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+	
+	private void setupbestBrushCodeButton() {
+		String buttonText = "Display Code";
+	
+		int x = bestBrushPaintButton.x + bestBrushPaintButton.w + 10;
+		int y = height - 35;
+		int textH = 18;
+	
+		bestBrushCodeButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+	
+	// CodeTextArea Screen setup
+	private void setupcodeViewBrushButton() {
+		String buttonText = "Paint Using This Code";
+	
+		int x = 10;
+		int y = height - 35;
+		int textH = 18;
+	
+		codeViewBrushButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+	
+	private void setupcodeBackToMainButton() {
+		String buttonText = "Back To Rating Brushes";
+	
+		int x = codeViewBrushButton.x + codeViewBrushButton.w + 10;
+		int y = height - 35;
+		int textH = 18;
+	
+		codeBackToMainButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	}
+
+	private void setupfreeBrushCodeButton() {
+		String buttonText = "Display Code Of This Brush";
+	
+		int x = codeViewBrushButton.x + codeViewBrushButton.w + 10;
+		int y = height - 70;
+		int textH = 18;
+	
+		freeBrushCodeButton = new TextButton(this, fontTextBold, buttonText, x,
+				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+		
+		freeBrushCodeButton.x = (width / 2) - (freeBrushCodeButton.w / 2);
+	}
+	
 
 }

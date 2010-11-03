@@ -45,6 +45,7 @@ public class PopBar {
 
 	void render() {
 		parent.pushStyle();
+		parent.smooth();
 		
 		if(displayTicks){
 			parent.stroke(rectColor);
@@ -81,6 +82,7 @@ public class PopBar {
 		parent.fill(buttonColor);
 		parent.ellipse(buttonLoc, centerY, h - 10, h - 10);
 
+		parent.noSmooth();
 		parent.popStyle();
 	}
 
