@@ -74,6 +74,9 @@ public class PushBrush extends PApplet {
 	TextButton freeBrushCodeButton;
 	boolean illegalBrushError;
 	
+	PausePlayButton pausePlayButton;
+	PausePlayButton freeDrawPausePlayButton;
+	
 	int buttonxPadding;
 	int buttonyPadding;
 	int buttonborderColor;
@@ -163,6 +166,9 @@ public class PushBrush extends PApplet {
 		setupcodeBackToMainButton();
 		setupfreeBrushCodeButton();
 	
+		setuppausePlayButton();
+		setupfreeDrawPausePlayButton();
+		
 		// Setup canvas image
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 		
@@ -198,7 +204,7 @@ public class PushBrush extends PApplet {
 		}
 	
 	}
-	
+
 	public void draw() {
 	
 		// Display instructions screen if necessary
@@ -242,6 +248,7 @@ public class PushBrush extends PApplet {
 			enterCodeButton.pressed();
 			bestBrushPaintButton.pressed();
 			bestBrushCodeButton.pressed();
+			pausePlayButton.pressed();
 		}
 		if (textScreen){
 			codeViewBrushButton.pressed();
@@ -250,6 +257,7 @@ public class PushBrush extends PApplet {
 		if (freeDrawScreen){
 			codeBackToMainButton.pressed();
 			freeBrushCodeButton.pressed();
+			freeDrawPausePlayButton.pressed();
 		}
 	}
 	
@@ -264,6 +272,7 @@ public class PushBrush extends PApplet {
 			enterCodeButton.released();
 			bestBrushPaintButton.released();
 			bestBrushCodeButton.released();
+			pausePlayButton.released();
 		}
 		if (textScreen){
 			codeViewBrushButton.released();
@@ -272,6 +281,7 @@ public class PushBrush extends PApplet {
 		if (freeDrawScreen){
 			codeBackToMainButton.released();
 			freeBrushCodeButton.released();
+			freeDrawPausePlayButton.released();
 		}
 	}
 	
@@ -428,6 +438,8 @@ public class PushBrush extends PApplet {
 			return true;
 		}
 		
+		pausePlayButton.checkForClick();
+		
 		if (fitnessBar.clicked()) {
 			drawFitnessBarClicked();
 		}
@@ -440,14 +452,16 @@ public class PushBrush extends PApplet {
 	 * The main drawing method for drawing to the main screen.
 	 */
 	private void drawNormalMainScreen() {
-		// Print brush number of times equal to paintsPerFrame		
-		for (int i = 0; i < paintsPerFrame; i++) {
-			// Get the next brush from the current individual
-			BrushAttributes newBrush = ga.GetNextBrush(brush);
-	
-			// Update and paint the next brush
-			updateBrush(brush, newBrush);
-			paintBrush(brush);
+		// Print brush number of times equal to paintsPerFrame
+		if (!pausePlayButton.isPaused()) {
+			for (int i = 0; i < paintsPerFrame; i++) {
+				// Get the next brush from the current individual
+				BrushAttributes newBrush = ga.GetNextBrush(brush);
+
+				// Update and paint the next brush
+				updateBrush(brush, newBrush);
+				paintBrush(brush);
+			}
 		}
 		
 		// //////// Create the header //////////
@@ -512,6 +526,8 @@ public class PushBrush extends PApplet {
 		bestBrushPaintButton.render();
 		bestBrushCodeButton.render();
 		
+		pausePlayButton.render();
+		
 		// Generation Zero Error
 		if(genZeroError && ga.GetGenerationCount() <= 0){
 			showGenerationZeroError();
@@ -562,6 +578,7 @@ public class PushBrush extends PApplet {
 	
 		// Reset some necessary parameters
 		background(0);
+		pausePlayButton.play();
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 		brush = new BrushAttributes(initx, inity, initradius, initr, initg,
 				initb, inittimeStep);
@@ -650,6 +667,7 @@ public class PushBrush extends PApplet {
 		if (codeBackToMainButton.clicked()) {
 			freeDrawScreen = false;
 			mainScreen = true;
+			freeDrawPausePlayButton.play();
 
 			image(imgCanvas, 0, canvasYStart);
 			return;
@@ -657,20 +675,25 @@ public class PushBrush extends PApplet {
 		if (freeBrushCodeButton.clicked()) {
 			freeDrawScreen = false;
 			textScreen = true;
+			freeDrawPausePlayButton.play();
 			
 			codeTextArea.setText(freeDrawProgram.toString());
 			return;
 		}
 		
-		// Print brush number of times equal to paintsPerFrame		
-		for (int i = 0; i < paintsPerFrame; i++) {
-			// Get the next brush from the current individual
-			BrushAttributes newBrush = ga.GetNextBrushFromProgram(
-					freeDrawBrush, freeDrawProgram);
+		freeDrawPausePlayButton.checkForClick();
+		
+		// Print brush number of times equal to paintsPerFrame
+		if (!freeDrawPausePlayButton.isPaused()) {
+			for (int i = 0; i < paintsPerFrame; i++) {
+				// Get the next brush from the current individual
+				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
+						freeDrawBrush, freeDrawProgram);
 
-			// Update and paint the next brush
-			updateBrush(freeDrawBrush, newBrush);
-			paintBrush(freeDrawBrush);
+				// Update and paint the next brush
+				updateBrush(freeDrawBrush, newBrush);
+				paintBrush(freeDrawBrush);
+			}
 		}
 		
 		// //////// Create the header //////////
@@ -699,6 +722,7 @@ public class PushBrush extends PApplet {
 		// Buttons
 		codeBackToMainButton.render();
 		freeBrushCodeButton.render();
+		freeDrawPausePlayButton.render();
 		
 	}
 	
@@ -916,5 +940,36 @@ public class PushBrush extends PApplet {
 		freeBrushCodeButton.x = (width / 2) - (freeBrushCodeButton.w / 2);
 	}
 	
+	private void setuppausePlayButton() {
+		int x = width - 55;
+		int y = 40;
+		
+		int playColor = buttontextColor;
+		int pauseColor = color(120);
 
+		pausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
+				pauseColor, playColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+		
+		pausePlayButton.play();
+
+	}
+	
+	private void setupfreeDrawPausePlayButton() {
+		int x = width - 55;
+		int y = 40;
+		
+		int playColor = buttontextColor;
+		int pauseColor = color(120);
+
+		freeDrawPausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
+				pauseColor, playColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+		
+		freeDrawPausePlayButton.play();
+
+	}
+
+	
+	
 }
