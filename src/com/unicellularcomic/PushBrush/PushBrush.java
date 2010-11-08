@@ -97,7 +97,6 @@ public class PushBrush extends PApplet {
 	PImage imgCanvas;
 	
 	public void setup() {
-		
 		// General setup
 		size(700, 705);
 		frameRate(500);
@@ -173,7 +172,7 @@ public class PushBrush extends PApplet {
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 		
 		// Setup textArea
-		codeTextArea = new TextArea("Starting text here 2999", 30, 90,
+		codeTextArea = new TextArea("Starting text here 2999", 30, 60,
 				TextArea.SCROLLBARS_VERTICAL_ONLY);
 	
 		// Setup PushBrushPC
@@ -204,7 +203,7 @@ public class PushBrush extends PApplet {
 		}
 	
 	}
-
+	
 	public void draw() {
 	
 		// Display instructions screen if necessary
@@ -236,7 +235,7 @@ public class PushBrush extends PApplet {
 		}
 		
 	}
-
+	
 	public void mousePressed() {
 		if (instructionsScreen) {
 			mainScreenButton.pressed();
@@ -299,43 +298,43 @@ public class PushBrush extends PApplet {
 		// Define some constants
 		float minRadius = 1;
 		float maxRadius = 100;
-	
+
 		// Update brush attributes
 		//brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
-		while(newBrush.radius < minRadius){
-			newBrush.radius += maxRadius - minRadius;
-		}
 		brushToUpdate.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius)) + minRadius;
-		
+		if(brushToUpdate.radius < minRadius){
+			brushToUpdate.radius += maxRadius - minRadius;
+		}
+
 		float minX = -(canvasWidth / 2);
 		float maxX = canvasWidth - (canvasWidth / 2);
 		//brush.x = constrain(newBrush.x, minX, maxX);
-		while(newBrush.x < minX){
-			newBrush.x += maxX - minX;
-		}
 		brushToUpdate.x = ((newBrush.x - minX) % (maxX - minX)) + minX;
-	
+		if(brushToUpdate.x < minX){
+			brushToUpdate.x += maxX - minX;
+		}
+
 		float minY =  -(canvasHeight / 2);
 		float maxY = canvasHeight - (canvasHeight / 2);
 		//brush.y = constrain(newBrush.y, minY, maxY);
-		while(newBrush.y < minY){
-			newBrush.y += maxY - minY;
-		}
 		brushToUpdate.y = ((newBrush.y - minY) % (maxY - minY)) + minY;
-		
-		// Use these if you want wrapping colors
-		while (newBrush.red < 0) {
-			newBrush.red += 256;
+		if(brushToUpdate.y < minY){
+			brushToUpdate.y += maxY - minY;
 		}
+
+		// Use these if you want wrapping colors
 		brushToUpdate.red = newBrush.red % 256;
-		while (newBrush.green < 0) {
-			newBrush.green += 256;
+		if(brushToUpdate.red < 0){
+			brushToUpdate.red += 256;
 		}
 		brushToUpdate.green = newBrush.green % 256;
-		while (newBrush.blue < 0) {
-			newBrush.blue += 256;
+		if(brushToUpdate.green < 0){
+			brushToUpdate.green += 256;
 		}
 		brushToUpdate.blue = newBrush.blue % 256;
+		if(brushToUpdate.blue < 0){
+			brushToUpdate.blue += 256;
+		}
 	
 		/*
 		 * // Use these if you want non-wrapping colors brush.red =
@@ -346,7 +345,7 @@ public class PushBrush extends PApplet {
 	
 		brushToUpdate.t++;
 	}
-
+	
 	/**
 	 * Paints the brush to the screen.
 	 * 
@@ -439,7 +438,7 @@ public class PushBrush extends PApplet {
 		}
 		
 		pausePlayButton.checkForClick();
-		
+
 		if (fitnessBar.clicked()) {
 			drawFitnessBarClicked();
 		}
@@ -453,11 +452,12 @@ public class PushBrush extends PApplet {
 	 */
 	private void drawNormalMainScreen() {
 		// Print brush number of times equal to paintsPerFrame
+		
 		if (!pausePlayButton.isPaused()) {
 			for (int i = 0; i < paintsPerFrame; i++) {
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrush(brush);
-
+	
 				// Update and paint the next brush
 				updateBrush(brush, newBrush);
 				paintBrush(brush);
@@ -589,10 +589,10 @@ public class PushBrush extends PApplet {
 			textScreen = false;
 			mainScreen = true;
 			illegalBrushError = false;
-	
+
+			codeTextAreaVisible = false;
 			this.remove(codeTextArea);
 			this.validate();
-			codeTextAreaVisible = false;
 			
 			image(imgCanvas, 0, canvasYStart);
 			return;
@@ -609,10 +609,10 @@ public class PushBrush extends PApplet {
 				textScreen = false;
 				freeDrawScreen = true;
 
+				codeTextAreaVisible = false;
 				this.remove(codeTextArea);
 				this.validate();
-				codeTextAreaVisible = false;
-
+	
 				try {
 					freeDrawProgram = new Program(inputProgram);
 				} catch (Exception e) {
@@ -662,13 +662,13 @@ public class PushBrush extends PApplet {
 		codeBackToMainButton.render();
 		
 	}
-
+	
 	private void drawFreeDrawScreen() {
 		if (codeBackToMainButton.clicked()) {
 			freeDrawScreen = false;
 			mainScreen = true;
 			freeDrawPausePlayButton.play();
-
+	
 			image(imgCanvas, 0, canvasYStart);
 			return;
 		}
@@ -689,7 +689,7 @@ public class PushBrush extends PApplet {
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 						freeDrawBrush, freeDrawProgram);
-
+	
 				// Update and paint the next brush
 				updateBrush(freeDrawBrush, newBrush);
 				paintBrush(freeDrawBrush);
@@ -700,7 +700,7 @@ public class PushBrush extends PApplet {
 		fill(headerBackgroundColor);
 		noStroke();
 		rect(0, 0, width, headerHeight);
-
+	
 		// Title
 		fill(0);
 		textFont(fontTitle);
@@ -741,7 +741,7 @@ public class PushBrush extends PApplet {
 		popStyle();
 	}
 	
-
+	
 	/**
 	 * Checks to make sure the input string represents a legal Push program.
 	 * @param inputProgram
@@ -924,7 +924,7 @@ public class PushBrush extends PApplet {
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 	}
-
+	
 	private void setupfreeBrushCodeButton() {
 		String buttonText = "Display Code Of This Brush";
 	
@@ -946,13 +946,13 @@ public class PushBrush extends PApplet {
 		
 		int playColor = buttontextColor;
 		int pauseColor = color(120);
-
+	
 		pausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
 				pauseColor, playColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 		
 		pausePlayButton.play();
-
+	
 	}
 	
 	private void setupfreeDrawPausePlayButton() {
@@ -961,15 +961,13 @@ public class PushBrush extends PApplet {
 		
 		int playColor = buttontextColor;
 		int pauseColor = color(120);
-
+	
 		freeDrawPausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
 				pauseColor, playColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 		
 		freeDrawPausePlayButton.play();
-
-	}
-
 	
+	}
 	
 }
