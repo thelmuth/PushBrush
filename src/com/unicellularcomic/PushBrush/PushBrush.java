@@ -298,14 +298,14 @@ public class PushBrush extends PApplet {
 		// Define some constants
 		float minRadius = 1;
 		float maxRadius = 100;
-
+	
 		// Update brush attributes
 		//brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
 		brushToUpdate.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius)) + minRadius;
 		if(brushToUpdate.radius < minRadius){
 			brushToUpdate.radius += maxRadius - minRadius;
 		}
-
+	
 		float minX = -(canvasWidth / 2);
 		float maxX = canvasWidth - (canvasWidth / 2);
 		//brush.x = constrain(newBrush.x, minX, maxX);
@@ -313,7 +313,7 @@ public class PushBrush extends PApplet {
 		if(brushToUpdate.x < minX){
 			brushToUpdate.x += maxX - minX;
 		}
-
+	
 		float minY =  -(canvasHeight / 2);
 		float maxY = canvasHeight - (canvasHeight / 2);
 		//brush.y = constrain(newBrush.y, minY, maxY);
@@ -321,7 +321,7 @@ public class PushBrush extends PApplet {
 		if(brushToUpdate.y < minY){
 			brushToUpdate.y += maxY - minY;
 		}
-
+	
 		// Use these if you want wrapping colors
 		brushToUpdate.red = newBrush.red % 256;
 		if(brushToUpdate.red < 0){
@@ -438,7 +438,7 @@ public class PushBrush extends PApplet {
 		}
 		
 		pausePlayButton.checkForClick();
-
+	
 		if (fitnessBar.clicked()) {
 			drawFitnessBarClicked();
 		}
@@ -589,7 +589,7 @@ public class PushBrush extends PApplet {
 			textScreen = false;
 			mainScreen = true;
 			illegalBrushError = false;
-
+	
 			codeTextAreaVisible = false;
 			this.remove(codeTextArea);
 			this.validate();
@@ -608,7 +608,7 @@ public class PushBrush extends PApplet {
 				illegalBrushError = false;
 				textScreen = false;
 				freeDrawScreen = true;
-
+	
 				codeTextAreaVisible = false;
 				this.remove(codeTextArea);
 				this.validate();
@@ -969,5 +969,5 @@ public class PushBrush extends PApplet {
 		freeDrawPausePlayButton.play();
 	
 	}
-	
+
 }
