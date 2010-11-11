@@ -11,6 +11,8 @@ import org.spiderland.Psh.PushBrush.PushBrushPC;
 public class PushBrush extends PApplet {
 	private static final long serialVersionUID = 1L;
 	
+	static boolean MOUSE_INTERACTION_ENABLED = false;
+	
 	// Setup constants
 	static int canvasWidth = 700;
 	static int canvasHeight = 500;
@@ -131,8 +133,14 @@ public class PushBrush extends PApplet {
 		initr = initg = initb = 128;
 		inittimeStep = 0;
 	
-		brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-				initb, inittimeStep);
+		if(MOUSE_INTERACTION_ENABLED){
+			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
+					initb, inittimeStep, true);
+		}
+		else {
+			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
+					initb, inittimeStep);
+		}
 	
 		/*
 		 * // For now, use non-random initial values. x =
@@ -405,8 +413,14 @@ public class PushBrush extends PApplet {
 			
 			// Reset some necessary parameters
 			background(0);
-			freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep);
+			if(MOUSE_INTERACTION_ENABLED){
+				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
+						initb, inittimeStep, true);
+			}
+			else {
+				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
+						initb, inittimeStep);
+			}
 			
 			freeDrawScreen = true;
 			mainScreen = false;
@@ -455,6 +469,20 @@ public class PushBrush extends PApplet {
 		
 		if (!pausePlayButton.isPaused()) {
 			for (int i = 0; i < paintsPerFrame; i++) {
+				if (MOUSE_INTERACTION_ENABLED) {
+					if (mouseX >= 0 && mouseX < width && mouseY >= canvasYStart
+							&& mouseY <= canvasYStart + canvasHeight) {
+						brush.mouse_x = mouseX - (width / 2);
+						brush.mouse_y = mouseY - canvasYStart
+								- (canvasHeight / 2);
+						brush.mouse_pressed = mousePressed;
+					} else {
+						brush.mouse_x = 0;
+						brush.mouse_y = 0;
+						brush.mouse_pressed = false;
+					}
+				}
+				
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrush(brush);
 	
@@ -580,8 +608,14 @@ public class PushBrush extends PApplet {
 		background(0);
 		pausePlayButton.play();
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
-		brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-				initb, inittimeStep);
+		if(MOUSE_INTERACTION_ENABLED){
+			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
+					initb, inittimeStep, true);
+		}
+		else {
+			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
+					initb, inittimeStep);
+		}
 	}
 	
 	private void drawTextScreen() {
@@ -623,8 +657,14 @@ public class PushBrush extends PApplet {
 				
 				// Reset some necessary parameters
 				background(0);
-				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-						initb, inittimeStep);
+				if(MOUSE_INTERACTION_ENABLED){
+					freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
+							initb, inittimeStep, true);
+				}
+				else {
+					freeDrawBrush= new BrushAttributes(initx, inity, initradius, initr, initg,
+							initb, inittimeStep);
+				}
 				
 				return;
 			}
@@ -686,10 +726,24 @@ public class PushBrush extends PApplet {
 		// Print brush number of times equal to paintsPerFrame
 		if (!freeDrawPausePlayButton.isPaused()) {
 			for (int i = 0; i < paintsPerFrame; i++) {
+				if(MOUSE_INTERACTION_ENABLED){
+					if (mouseX >= 0 && mouseX < width && mouseY >= canvasYStart
+							&& mouseY <= canvasYStart + canvasHeight) {
+						freeDrawBrush.mouse_x = mouseX - (width / 2);
+						freeDrawBrush.mouse_y = mouseY - canvasYStart
+								- (canvasHeight / 2);
+						freeDrawBrush.mouse_pressed = mousePressed;
+					} else {
+						freeDrawBrush.mouse_x = 0;
+						freeDrawBrush.mouse_y = 0;
+						freeDrawBrush.mouse_pressed = false;
+					}
+				}
+				
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 						freeDrawBrush, freeDrawProgram);
-	
+				
 				// Update and paint the next brush
 				updateBrush(freeDrawBrush, newBrush);
 				paintBrush(freeDrawBrush);
