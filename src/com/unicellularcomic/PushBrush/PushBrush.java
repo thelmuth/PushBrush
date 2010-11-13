@@ -8,6 +8,8 @@ import org.spiderland.Psh.*;
 import org.spiderland.Psh.PushBrush.BrushAttributes;
 import org.spiderland.Psh.PushBrush.PushBrushPC;
 
+//TODO (500 exec.rand)
+
 public class PushBrush extends PApplet {
 	private static final long serialVersionUID = 1L;
 	
@@ -57,6 +59,7 @@ public class PushBrush extends PApplet {
 	float initr;
 	float initg;
 	float initb;
+	float initalpha;
 	
 	// Time step of current individual
 	int inittimeStep;
@@ -131,24 +134,17 @@ public class PushBrush extends PApplet {
 		inity = 0;
 	
 		initr = initg = initb = 128;
+		initalpha = 255;
 		inittimeStep = 0;
 	
 		if(MOUSE_INTERACTION_ENABLED){
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep, true);
+					initb, initalpha, inittimeStep, true);
 		}
 		else {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep);
+					initb, initalpha, inittimeStep);
 		}
-	
-		/*
-		 * // For now, use non-random initial values. x =
-		 * RNG.nextInt(canvasWidth - (2 * radius)) + radius; y =
-		 * RNG.nextInt(canvasHeight - (2 * radius)) + radius;
-		 * 
-		 * r = RNG.nextInt(255); g = RNG.nextInt(255); b = RNG.nextInt(255);
-		 */
 	
 		// Button parameters
 		buttonxPadding = 10;
@@ -343,6 +339,10 @@ public class PushBrush extends PApplet {
 		if(brushToUpdate.blue < 0){
 			brushToUpdate.blue += 256;
 		}
+		brushToUpdate.alpha = newBrush.alpha % 256;
+		if(brushToUpdate.alpha < 0){
+			brushToUpdate.alpha += 256;
+		}
 	
 		/*
 		 * // Use these if you want non-wrapping colors brush.red =
@@ -362,13 +362,15 @@ public class PushBrush extends PApplet {
 	private void paintBrush(BrushAttributes paintBrush) {
 		pushStyle();
 		smooth();
-	
-		fill(paintBrush.red, paintBrush.green, paintBrush.blue);
+
+		fill(paintBrush.red, paintBrush.green, paintBrush.blue,
+				paintBrush.alpha);
 		noStroke();
 		ellipseMode(CENTER);
 		ellipse(paintBrush.x + (canvasWidth / 2), paintBrush.y + canvasYStart
-				+ (canvasHeight / 2), paintBrush.radius * 2, paintBrush.radius * 2);
-	
+				+ (canvasHeight / 2), paintBrush.radius * 2,
+				paintBrush.radius * 2);
+
 		noSmooth();
 		popStyle();
 	}
@@ -415,11 +417,11 @@ public class PushBrush extends PApplet {
 			background(0);
 			if(MOUSE_INTERACTION_ENABLED){
 				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-						initb, inittimeStep, true);
+						initb, initalpha, inittimeStep, true);
 			}
 			else {
 				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-						initb, inittimeStep);
+						initb, initalpha, inittimeStep);
 			}
 			
 			freeDrawScreen = true;
@@ -610,11 +612,11 @@ public class PushBrush extends PApplet {
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 		if(MOUSE_INTERACTION_ENABLED){
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep, true);
+					initb, initalpha, inittimeStep, true);
 		}
 		else {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
-					initb, inittimeStep);
+					initb, initalpha, inittimeStep);
 		}
 	}
 	
@@ -659,11 +661,11 @@ public class PushBrush extends PApplet {
 				background(0);
 				if(MOUSE_INTERACTION_ENABLED){
 					freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-							initb, inittimeStep, true);
+							initb, initalpha, inittimeStep, true);
 				}
 				else {
 					freeDrawBrush= new BrushAttributes(initx, inity, initradius, initr, initg,
-							initb, inittimeStep);
+							initb, initalpha, inittimeStep);
 				}
 				
 				return;
