@@ -8,8 +8,6 @@ import org.spiderland.Psh.*;
 import org.spiderland.Psh.PushBrush.BrushAttributes;
 import org.spiderland.Psh.PushBrush.PushBrushPC;
 
-//TODO (500 exec.rand)
-
 public class PushBrush extends PApplet {
 	private static final long serialVersionUID = 1L;
 	
