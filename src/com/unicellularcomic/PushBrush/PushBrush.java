@@ -14,6 +14,7 @@ public class PushBrush extends PApplet {
 	static boolean MOUSE_INTERACTION_ENABLED = false;
 	static boolean NO_HELP = true;
 	static boolean PAUSE_PLAY_BUTTON = false;
+	static boolean SLIDER_INSTEAD_OF_BAR = true;
 	
 	// Setup constants
 	static int canvasWidth = 700;
@@ -66,8 +67,12 @@ public class PushBrush extends PApplet {
 	
 	// Sliders and buttons
 	PopBar fitnessBar;
+	HorizontalSlider fitnessSlider;
+	
 	TextButton helpButton;
 	TextButton mainScreenButton;
+
+	TextButton nextButton;
 	TextButton brushCodeButton;
 	TextButton enterCodeButton;
 	TextButton bestBrushPaintButton;
@@ -161,15 +166,19 @@ public class PushBrush extends PApplet {
 		buttonbackgroundColorPress = color(93, 163, 181);
 	
 		// Setup sliders and buttons
-		// setupSlider();
-		setupFitnessBar();
-		setupMainScreenButton();
+		if (SLIDER_INSTEAD_OF_BAR) {
+			setupFitnessSlider();
+			setupNextButton();
+		} else {
+			setupFitnessBar();
+		}
 		setupbrushCodeButton();
 		setupenterCodeButton();
 		setupbestBrushPaintButton();
 		setupbestBrushCodeButton();
 		if(!NO_HELP){
 			setupHelpButton();
+			setupMainScreenButton();
 		}
 	
 		setupcodeViewBrushButton();
@@ -254,7 +263,12 @@ public class PushBrush extends PApplet {
 			mainScreenButton.pressed();
 		}
 		if (mainScreen) {
-			fitnessBar.pressed();
+			if (SLIDER_INSTEAD_OF_BAR) {
+				nextButton.pressed();
+				fitnessSlider.pressed();
+			} else {
+				fitnessBar.pressed();
+			}
 			brushCodeButton.pressed();
 			enterCodeButton.pressed();
 			bestBrushPaintButton.pressed();
@@ -284,7 +298,13 @@ public class PushBrush extends PApplet {
 			mainScreenButton.released();
 		}
 		if (mainScreen) {
-			fitnessBar.released();
+			if(SLIDER_INSTEAD_OF_BAR){
+				nextButton.released();
+				fitnessSlider.released();
+			}
+			else {
+				fitnessBar.released();
+			}
 			brushCodeButton.released();
 			enterCodeButton.released();
 			bestBrushPaintButton.released();
@@ -310,6 +330,9 @@ public class PushBrush extends PApplet {
 	}
 	
 	public void mouseDragged() {
+		if(SLIDER_INSTEAD_OF_BAR){
+			fitnessSlider.dragged();
+		}
 	}
 	
 	/**
@@ -477,12 +500,19 @@ public class PushBrush extends PApplet {
 		}
 	
 
-		if(PAUSE_PLAY_BUTTON){
+		if (PAUSE_PLAY_BUTTON) {
 			pausePlayButton.checkForClick();
 		}
-		
-		if (fitnessBar.clicked()) {
-			drawFitnessBarClicked();
+
+		if (SLIDER_INSTEAD_OF_BAR) {
+			if (nextButton.clicked()) {
+				drawFitnessBarClicked();
+			}
+		}
+		else {
+			if (fitnessBar.clicked()) {
+				drawFitnessBarClicked();
+			}
 		}
 	
 		// If here, no buttons clicked that need to return, so return false.
@@ -567,17 +597,36 @@ public class PushBrush extends PApplet {
 		textAlign(CENTER);
 		text("PushBrush", width / 2, 30);
 	
-		// Fitness slider
-		fitnessBar.render();
-		textAlign(LEFT);
-		textFont(fontTextBold);
-		text("Rate:", 10, 65);
-	
-		// Slider "best" and "worst"
-		textAlign(CENTER);
-		textFont(fontText);
-		text("worst", 80, headerHeight - 5);
-		text("best", width - 80, headerHeight - 5);
+		if (SLIDER_INSTEAD_OF_BAR) {
+			// Fitness slider
+			fitnessSlider.render();
+			textAlign(LEFT);
+			textFont(fontTextBold);
+			text("Coolness:", 10, 65);
+
+			// Slider "best" and "worst"
+			textFont(fontText);
+			textAlign(LEFT);
+			text("Boring", 100, headerHeight - 10);
+			textAlign(RIGHT);
+			text("Awesome!", width - 100, headerHeight - 10);
+			
+			// Next button
+			nextButton.render();
+		}
+		else {
+			// Fitness slider
+			fitnessBar.render();
+			textAlign(LEFT);
+			textFont(fontTextBold);
+			text("Rate:", 10, 65);
+
+			// Slider "best" and "worst"
+			textAlign(CENTER);
+			textFont(fontText);
+			text("worst", 80, headerHeight - 5);
+			text("best", width - 80, headerHeight - 5);
+		}
 	
 		/*
 		 * // Used to display current rating value float normalizedSliderPos =
@@ -655,10 +704,16 @@ public class PushBrush extends PApplet {
 		// NOTE: Fitness ranges from minFitness to maxFitness, where lower
 		// is better. This is because PshGP uses errors instead of fitness,
 		// where lower error is better.
+		float fitness;
 	
-		float fitness = maxFitness
-				- ((fitnessBar.getValue() * (maxFitness - minFitness)) + minFitness);
-	
+		if (SLIDER_INSTEAD_OF_BAR) {
+			fitness = maxFitness - ((fitnessSlider.getValue() * (maxFitness - minFitness)) + minFitness);
+		}
+		else {
+			fitness = maxFitness
+					- ((fitnessBar.getValue() * (maxFitness - minFitness)) + minFitness);
+		}
+		
 		try {
 			ga.RunUntilHumanEvaluation(fitness);
 		} catch (Exception e) {
@@ -988,6 +1043,39 @@ public class PushBrush extends PApplet {
 		boolean displayTicks = true;
 		fitnessBar = new PopBar(this, sliderX, sliderY, sliderW, sliderH,
 				displayTicks);
+	}
+	
+	
+	private void setupFitnessSlider() {
+		int sliderX = 100;
+		int sliderY = 50;
+		int sliderW = width - (2 * sliderX);
+		int sliderH = 20;
+		int sliderBarW = 40;
+		
+		int sliderLineColor = 0;
+		int sliderBarColor = color(255, 255, 0);
+		int sliderBarColorHover = color(230, 230, 0);
+		int sliderBarColorPressed = color(180, 180, 0);
+		
+		fitnessSlider = new HorizontalSlider(this, sliderX, sliderY, sliderW,
+				sliderH, sliderBarW, sliderLineColor, sliderBarColor,
+				sliderBarColorHover, sliderBarColorPressed);
+	}
+	
+	private void setupNextButton() {
+		String textHelp = "Next";
+		
+		int x = width - 55;
+		int y = 45;
+		int textH = 18;
+	
+		nextButton = new TextButton(this, fontTextBold, textHelp, x, y,
+				buttonxPadding, buttonyPadding, textH, buttonborderColor,
+				buttontextColor, buttonbackgroundColor,
+				buttonbackgroundColorHover, buttonbackgroundColorPress);
+	
+		nextButton.x = width - 20 - nextButton.w;
 	}
 	
 	private void setupbrushCodeButton() {
