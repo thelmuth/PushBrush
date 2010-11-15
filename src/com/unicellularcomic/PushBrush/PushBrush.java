@@ -12,6 +12,8 @@ public class PushBrush extends PApplet {
 	private static final long serialVersionUID = 1L;
 
 	static boolean MOUSE_INTERACTION_ENABLED = false;
+	static boolean NO_HELP = true;
+	static boolean PAUSE_PLAY_BUTTON = false;
 	
 	// Setup constants
 	static int canvasWidth = 700;
@@ -118,8 +120,14 @@ public class PushBrush extends PApplet {
 		RNG = new Random();
 	
 		// Initialize instructions screen
-		instructionsScreen = true;
-		mainScreen = false;
+		if(NO_HELP){
+			instructionsScreen = false;
+			mainScreen = true;
+		}
+		else {
+			instructionsScreen = true;
+			mainScreen = false;
+		}
 		textScreen = false;
 		freeDrawScreen = false;
 	
@@ -158,17 +166,21 @@ public class PushBrush extends PApplet {
 		setupMainScreenButton();
 		setupbrushCodeButton();
 		setupenterCodeButton();
-		setupHelpButton();
 		setupbestBrushPaintButton();
 		setupbestBrushCodeButton();
+		if(!NO_HELP){
+			setupHelpButton();
+		}
 	
 		setupcodeViewBrushButton();
 		setupcodeBackToMainButton();
 		setupfreeBrushCodeButton();
 	
-		setuppausePlayButton();
-		setupfreeDrawPausePlayButton();
-	
+		if(PAUSE_PLAY_BUTTON){
+			setuppausePlayButton();
+			setupfreeDrawPausePlayButton();
+		}
+		
 		// Setup canvas image
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 	
@@ -243,12 +255,16 @@ public class PushBrush extends PApplet {
 		}
 		if (mainScreen) {
 			fitnessBar.pressed();
-			helpButton.pressed();
 			brushCodeButton.pressed();
 			enterCodeButton.pressed();
 			bestBrushPaintButton.pressed();
 			bestBrushCodeButton.pressed();
-			pausePlayButton.pressed();
+			if(PAUSE_PLAY_BUTTON){
+				pausePlayButton.pressed();
+			}
+			if(!NO_HELP){
+				helpButton.pressed();
+			}
 		}
 		if (textScreen) {
 			codeViewBrushButton.pressed();
@@ -257,7 +273,9 @@ public class PushBrush extends PApplet {
 		if (freeDrawScreen) {
 			codeBackToMainButton.pressed();
 			freeBrushCodeButton.pressed();
-			freeDrawPausePlayButton.pressed();
+			if(PAUSE_PLAY_BUTTON){
+				freeDrawPausePlayButton.pressed();
+			}
 		}
 	}
 	
@@ -267,12 +285,16 @@ public class PushBrush extends PApplet {
 		}
 		if (mainScreen) {
 			fitnessBar.released();
-			helpButton.released();
 			brushCodeButton.released();
 			enterCodeButton.released();
 			bestBrushPaintButton.released();
 			bestBrushCodeButton.released();
-			pausePlayButton.released();
+			if(PAUSE_PLAY_BUTTON){
+				pausePlayButton.released();
+			}
+			if(!NO_HELP){
+				helpButton.released();
+			}
 		}
 		if (textScreen) {
 			codeViewBrushButton.released();
@@ -281,7 +303,9 @@ public class PushBrush extends PApplet {
 		if (freeDrawScreen) {
 			codeBackToMainButton.released();
 			freeBrushCodeButton.released();
-			freeDrawPausePlayButton.released();
+			if(PAUSE_PLAY_BUTTON){
+				freeDrawPausePlayButton.released();
+			}
 		}
 	}
 	
@@ -441,17 +465,22 @@ public class PushBrush extends PApplet {
 			return true;
 		}
 	
-		if (helpButton.clicked()) {
-			// Capture canvas image before going to instructions screen
-			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-	
-			instructionsScreen = true;
-			mainScreen = false;
-			return true;
+		if (!NO_HELP) {
+			if (helpButton.clicked()) {
+				// Capture canvas image before going to instructions screen
+				imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
+
+				instructionsScreen = true;
+				mainScreen = false;
+				return true;
+			}
 		}
 	
-		pausePlayButton.checkForClick();
-	
+
+		if(PAUSE_PLAY_BUTTON){
+			pausePlayButton.checkForClick();
+		}
+		
 		if (fitnessBar.clicked()) {
 			drawFitnessBarClicked();
 		}
@@ -465,11 +494,42 @@ public class PushBrush extends PApplet {
 	 */
 	private void drawNormalMainScreen() {
 		// Print brush number of times equal to paintsPerFrame
+		if(brush.t == 0){
+			image(imgCanvas, 0, canvasYStart);
+		}
 	
-		if (!pausePlayButton.isPaused()) {
+		if (PAUSE_PLAY_BUTTON) {
+			if (!pausePlayButton.isPaused()) {
+				for (int i = 0; i < paintsPerFrame; i++) {
+					if (MOUSE_INTERACTION_ENABLED) {
+						if (mouseX >= 0 && mouseX < width
+								&& mouseY >= canvasYStart
+								&& mouseY <= canvasYStart + canvasHeight) {
+							brush.mouse_x = mouseX - (width / 2);
+							brush.mouse_y = mouseY - canvasYStart
+									- (canvasHeight / 2);
+							brush.mouse_pressed = mousePressed;
+						} else {
+							brush.mouse_x = 0;
+							brush.mouse_y = 0;
+							brush.mouse_pressed = false;
+						}
+					}
+
+					// Get the next brush from the current individual
+					BrushAttributes newBrush = ga.GetNextBrush(brush);
+
+					// Update and paint the next brush
+					updateBrush(brush, newBrush);
+					paintBrush(brush);
+				}
+			}
+		}
+		else {
 			for (int i = 0; i < paintsPerFrame; i++) {
 				if (MOUSE_INTERACTION_ENABLED) {
-					if (mouseX >= 0 && mouseX < width && mouseY >= canvasYStart
+					if (mouseX >= 0 && mouseX < width
+							&& mouseY >= canvasYStart
 							&& mouseY <= canvasYStart + canvasHeight) {
 						brush.mouse_x = mouseX - (width / 2);
 						brush.mouse_y = mouseY - canvasYStart
@@ -481,14 +541,14 @@ public class PushBrush extends PApplet {
 						brush.mouse_pressed = false;
 					}
 				}
-	
+
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrush(brush);
-	
+
 				// Update and paint the next brush
 				updateBrush(brush, newBrush);
 				paintBrush(brush);
-			}
+			}	
 		}
 	
 		// //////// Create the header //////////
@@ -543,17 +603,21 @@ public class PushBrush extends PApplet {
 		// Text for best brush
 		textAlign(LEFT);
 		textFont(fontTextBold);
-		text("Best Brush of Previous Generation: ", 15, height - 14);
+		text("Coolest Brush of Previous Generation: ", 15, height - 14);
 	
 		// Buttons
-		helpButton.render();
+		if(!NO_HELP){
+			helpButton.render();
+		}
 		brushCodeButton.render();
 		enterCodeButton.render();
 		bestBrushPaintButton.render();
 		bestBrushCodeButton.render();
 	
-		pausePlayButton.render();
-	
+		if(PAUSE_PLAY_BUTTON){
+			pausePlayButton.render();
+		}
+		
 		// Generation Zero Error
 		if (genZeroError && ga.GetGenerationCount() <= 0) {
 			showGenerationZeroError();
@@ -604,7 +668,9 @@ public class PushBrush extends PApplet {
 	
 		// Reset some necessary parameters
 		background(0);
-		pausePlayButton.play();
+		if(PAUSE_PLAY_BUTTON){
+			pausePlayButton.play();
+		}
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
 		if (MOUSE_INTERACTION_ENABLED) {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
@@ -711,7 +777,9 @@ public class PushBrush extends PApplet {
 		if (codeBackToMainButton.clicked()) {
 			freeDrawScreen = false;
 			mainScreen = true;
-			freeDrawPausePlayButton.play();
+			if(PAUSE_PLAY_BUTTON){
+				freeDrawPausePlayButton.play();
+			}
 	
 			image(imgCanvas, 0, canvasYStart);
 			return;
@@ -719,19 +787,52 @@ public class PushBrush extends PApplet {
 		if (freeBrushCodeButton.clicked()) {
 			freeDrawScreen = false;
 			textScreen = true;
-			freeDrawPausePlayButton.play();
-	
+			if(PAUSE_PLAY_BUTTON){
+				freeDrawPausePlayButton.play();
+			}
+			
 			codeTextArea.setText(freeDrawProgram.toString());
 			return;
 		}
-	
-		freeDrawPausePlayButton.checkForClick();
-	
+
+		if(PAUSE_PLAY_BUTTON){
+			freeDrawPausePlayButton.checkForClick();
+		}
+		
 		// Print brush number of times equal to paintsPerFrame
-		if (!freeDrawPausePlayButton.isPaused()) {
+		if (PAUSE_PLAY_BUTTON) {
+			if (!freeDrawPausePlayButton.isPaused()) {
+				for (int i = 0; i < paintsPerFrame; i++) {
+					if (MOUSE_INTERACTION_ENABLED) {
+						if (mouseX >= 0 && mouseX < width
+								&& mouseY >= canvasYStart
+								&& mouseY <= canvasYStart + canvasHeight) {
+							freeDrawBrush.mouse_x = mouseX - (width / 2);
+							freeDrawBrush.mouse_y = mouseY - canvasYStart
+									- (canvasHeight / 2);
+							freeDrawBrush.mouse_pressed = mousePressed;
+						} else {
+							freeDrawBrush.mouse_x = 0;
+							freeDrawBrush.mouse_y = 0;
+							freeDrawBrush.mouse_pressed = false;
+						}
+					}
+
+					// Get the next brush from the current individual
+					BrushAttributes newBrush = ga.GetNextBrushFromProgram(
+							freeDrawBrush, freeDrawProgram);
+
+					// Update and paint the next brush
+					updateBrush(freeDrawBrush, newBrush);
+					paintBrush(freeDrawBrush);
+				}
+			}
+		}
+		else {
 			for (int i = 0; i < paintsPerFrame; i++) {
 				if (MOUSE_INTERACTION_ENABLED) {
-					if (mouseX >= 0 && mouseX < width && mouseY >= canvasYStart
+					if (mouseX >= 0 && mouseX < width
+							&& mouseY >= canvasYStart
 							&& mouseY <= canvasYStart + canvasHeight) {
 						freeDrawBrush.mouse_x = mouseX - (width / 2);
 						freeDrawBrush.mouse_y = mouseY - canvasYStart
@@ -743,11 +844,11 @@ public class PushBrush extends PApplet {
 						freeDrawBrush.mouse_pressed = false;
 					}
 				}
-	
+
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 						freeDrawBrush, freeDrawProgram);
-	
+
 				// Update and paint the next brush
 				updateBrush(freeDrawBrush, newBrush);
 				paintBrush(freeDrawBrush);
@@ -780,8 +881,10 @@ public class PushBrush extends PApplet {
 		// Buttons
 		codeBackToMainButton.render();
 		freeBrushCodeButton.render();
-		freeDrawPausePlayButton.render();
-	
+		if(PAUSE_PLAY_BUTTON){
+			freeDrawPausePlayButton.render();
+		}
+		
 	}
 	
 	/**
@@ -888,7 +991,7 @@ public class PushBrush extends PApplet {
 	}
 	
 	private void setupbrushCodeButton() {
-		String buttonText = "Display This Brush's Code";
+		String buttonText = "This Brush's Code";
 	
 		int x = 10;
 		int y = height - 70;
@@ -933,7 +1036,7 @@ public class PushBrush extends PApplet {
 	
 		textFont(fontTextBold);
 	
-		int x = 20 + (int) textWidth("Best Brush of Previous Generation: ");
+		int x = 20 + (int) textWidth("Coolest Brush of Previous Generation: ");
 		int y = height - 35;
 		int textH = 18;
 	
@@ -944,7 +1047,7 @@ public class PushBrush extends PApplet {
 	}
 	
 	private void setupbestBrushCodeButton() {
-		String buttonText = "Display Code";
+		String buttonText = "Code";
 	
 		int x = bestBrushPaintButton.x + bestBrushPaintButton.w + 10;
 		int y = height - 35;
