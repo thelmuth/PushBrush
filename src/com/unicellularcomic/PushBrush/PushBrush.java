@@ -71,7 +71,7 @@ public class PushBrush extends PApplet {
 	
 	TextButton helpButton;
 	TextButton mainScreenButton;
-
+	
 	TextButton nextButton;
 	TextButton brushCodeButton;
 	TextButton enterCodeButton;
@@ -492,18 +492,18 @@ public class PushBrush extends PApplet {
 			if (helpButton.clicked()) {
 				// Capture canvas image before going to instructions screen
 				imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-
+	
 				instructionsScreen = true;
 				mainScreen = false;
 				return true;
 			}
 		}
 	
-
+	
 		if (PAUSE_PLAY_BUTTON) {
 			pausePlayButton.checkForClick();
 		}
-
+	
 		if (SLIDER_INSTEAD_OF_BAR) {
 			if (nextButton.clicked()) {
 				drawFitnessBarClicked();
@@ -545,10 +545,10 @@ public class PushBrush extends PApplet {
 							brush.mouse_pressed = false;
 						}
 					}
-
+	
 					// Get the next brush from the current individual
 					BrushAttributes newBrush = ga.GetNextBrush(brush);
-
+	
 					// Update and paint the next brush
 					updateBrush(brush, newBrush);
 					paintBrush(brush);
@@ -571,10 +571,10 @@ public class PushBrush extends PApplet {
 						brush.mouse_pressed = false;
 					}
 				}
-
+	
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrush(brush);
-
+	
 				// Update and paint the next brush
 				updateBrush(brush, newBrush);
 				paintBrush(brush);
@@ -603,7 +603,7 @@ public class PushBrush extends PApplet {
 			textAlign(LEFT);
 			textFont(fontTextBold);
 			text("Coolness:", 10, 65);
-
+	
 			// Slider "best" and "worst"
 			textFont(fontText);
 			textAlign(LEFT);
@@ -620,7 +620,7 @@ public class PushBrush extends PApplet {
 			textAlign(LEFT);
 			textFont(fontTextBold);
 			text("Rate:", 10, 65);
-
+	
 			// Slider "best" and "worst"
 			textAlign(CENTER);
 			textFont(fontText);
@@ -849,7 +849,7 @@ public class PushBrush extends PApplet {
 			codeTextArea.setText(freeDrawProgram.toString());
 			return;
 		}
-
+	
 		if(PAUSE_PLAY_BUTTON){
 			freeDrawPausePlayButton.checkForClick();
 		}
@@ -872,11 +872,11 @@ public class PushBrush extends PApplet {
 							freeDrawBrush.mouse_pressed = false;
 						}
 					}
-
+	
 					// Get the next brush from the current individual
 					BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 							freeDrawBrush, freeDrawProgram);
-
+	
 					// Update and paint the next brush
 					updateBrush(freeDrawBrush, newBrush);
 					paintBrush(freeDrawBrush);
@@ -899,11 +899,11 @@ public class PushBrush extends PApplet {
 						freeDrawBrush.mouse_pressed = false;
 					}
 				}
-
+	
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 						freeDrawBrush, freeDrawProgram);
-
+	
 				// Update and paint the next brush
 				updateBrush(freeDrawBrush, newBrush);
 				paintBrush(freeDrawBrush);
