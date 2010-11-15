@@ -595,7 +595,7 @@ public class PushBrush extends PApplet {
 		fill(0);
 		textFont(fontTitle);
 		textAlign(CENTER);
-		text("PushBrush", width / 2, 30);
+		text("PushBrush Evolver", width / 2, 30);
 	
 		if (SLIDER_INSTEAD_OF_BAR) {
 			// Fitness slider
@@ -919,7 +919,7 @@ public class PushBrush extends PApplet {
 		fill(0);
 		textFont(fontTitle);
 		textAlign(CENTER);
-		text("PushBrush", width / 2, 30);
+		text("PushBrush Viewer", width / 2, 30);
 	
 		// //////// Create the footer //////////
 		// Footer background
