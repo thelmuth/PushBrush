@@ -10,7 +10,7 @@ import org.spiderland.Psh.PushBrush.PushBrushPC;
 
 public class PushBrush extends PApplet {
 	private static final long serialVersionUID = 1L;
-	
+
 	static boolean MOUSE_INTERACTION_ENABLED = false;
 	
 	// Setup constants
@@ -34,7 +34,7 @@ public class PushBrush extends PApplet {
 	
 	// TextArea for input and output of individual code
 	TextArea codeTextArea;
-	boolean codeTextAreaVisible;
+	//boolean codeTextAreaVisible;
 	
 	// Program to be used by free draw
 	Program freeDrawProgram;
@@ -104,7 +104,7 @@ public class PushBrush extends PApplet {
 		size(700, 705);
 		frameRate(500);
 		paintsPerFrame = 100;
-		
+	
 		// Background colors
 		headerBackgroundColor = color(255, 255, 180);
 		background(headerBackgroundColor);
@@ -122,7 +122,7 @@ public class PushBrush extends PApplet {
 		mainScreen = false;
 		textScreen = false;
 		freeDrawScreen = false;
-		
+	
 		genZeroError = false;
 		illegalBrushError = false;
 	
@@ -135,11 +135,10 @@ public class PushBrush extends PApplet {
 		initalpha = 255;
 		inittimeStep = 0;
 	
-		if(MOUSE_INTERACTION_ENABLED){
+		if (MOUSE_INTERACTION_ENABLED) {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
 					initb, initalpha, inittimeStep, true);
-		}
-		else {
+		} else {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
 					initb, initalpha, inittimeStep);
 		}
@@ -162,17 +161,17 @@ public class PushBrush extends PApplet {
 		setupHelpButton();
 		setupbestBrushPaintButton();
 		setupbestBrushCodeButton();
-		
+	
 		setupcodeViewBrushButton();
 		setupcodeBackToMainButton();
 		setupfreeBrushCodeButton();
 	
 		setuppausePlayButton();
 		setupfreeDrawPausePlayButton();
-		
+	
 		// Setup canvas image
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
-		
+	
 		// Setup textArea
 		codeTextArea = new TextArea("Starting text here 2999", 30, 60,
 				TextArea.SCROLLBARS_VERTICAL_ONLY);
@@ -215,12 +214,12 @@ public class PushBrush extends PApplet {
 		}
 	
 		// Display text area screen if necessary
-		if(textScreen){
+		if (textScreen) {
 			drawTextScreen();
 			return;
 		}
-		
-		if(freeDrawScreen){
+	
+		if (freeDrawScreen) {
 			drawFreeDrawScreen();
 			return;
 		}
@@ -235,7 +234,7 @@ public class PushBrush extends PApplet {
 			// Draw main screen
 			drawNormalMainScreen();
 		}
-		
+	
 	}
 	
 	public void mousePressed() {
@@ -251,11 +250,11 @@ public class PushBrush extends PApplet {
 			bestBrushCodeButton.pressed();
 			pausePlayButton.pressed();
 		}
-		if (textScreen){
+		if (textScreen) {
 			codeViewBrushButton.pressed();
 			codeBackToMainButton.pressed();
 		}
-		if (freeDrawScreen){
+		if (freeDrawScreen) {
 			codeBackToMainButton.pressed();
 			freeBrushCodeButton.pressed();
 			freeDrawPausePlayButton.pressed();
@@ -275,11 +274,11 @@ public class PushBrush extends PApplet {
 			bestBrushCodeButton.released();
 			pausePlayButton.released();
 		}
-		if (textScreen){
+		if (textScreen) {
 			codeViewBrushButton.released();
 			codeBackToMainButton.released();
 		}
-		if (freeDrawScreen){
+		if (freeDrawScreen) {
 			codeBackToMainButton.released();
 			freeBrushCodeButton.released();
 			freeDrawPausePlayButton.released();
@@ -289,56 +288,59 @@ public class PushBrush extends PApplet {
 	public void mouseDragged() {
 	}
 	
-	
 	/**
 	 * Updates brush for the next time step.
 	 * 
-	 * @param brushToUpdate - Brush to update with newBrush attributes
-	 * @param newBrush - New brush attributes
+	 * @param brushToUpdate
+	 *            - Brush to update with newBrush attributes
+	 * @param newBrush
+	 *            - New brush attributes
 	 */
-	private void updateBrush(BrushAttributes brushToUpdate, BrushAttributes newBrush) {
+	private void updateBrush(BrushAttributes brushToUpdate,
+			BrushAttributes newBrush) {
 		// Define some constants
 		float minRadius = 1;
 		float maxRadius = 100;
 	
 		// Update brush attributes
-		//brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
-		brushToUpdate.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius)) + minRadius;
-		if(brushToUpdate.radius < minRadius){
+		// brush.radius = constrain(newBrush.radius, minRadius, maxRadius);
+		brushToUpdate.radius = ((newBrush.radius - minRadius) % (maxRadius - minRadius))
+				+ minRadius;
+		if (brushToUpdate.radius < minRadius) {
 			brushToUpdate.radius += maxRadius - minRadius;
 		}
 	
 		float minX = -(canvasWidth / 2);
 		float maxX = canvasWidth - (canvasWidth / 2);
-		//brush.x = constrain(newBrush.x, minX, maxX);
+		// brush.x = constrain(newBrush.x, minX, maxX);
 		brushToUpdate.x = ((newBrush.x - minX) % (maxX - minX)) + minX;
-		if(brushToUpdate.x < minX){
+		if (brushToUpdate.x < minX) {
 			brushToUpdate.x += maxX - minX;
 		}
 	
-		float minY =  -(canvasHeight / 2);
+		float minY = -(canvasHeight / 2);
 		float maxY = canvasHeight - (canvasHeight / 2);
-		//brush.y = constrain(newBrush.y, minY, maxY);
+		// brush.y = constrain(newBrush.y, minY, maxY);
 		brushToUpdate.y = ((newBrush.y - minY) % (maxY - minY)) + minY;
-		if(brushToUpdate.y < minY){
+		if (brushToUpdate.y < minY) {
 			brushToUpdate.y += maxY - minY;
 		}
 	
 		// Use these if you want wrapping colors
 		brushToUpdate.red = newBrush.red % 256;
-		if(brushToUpdate.red < 0){
+		if (brushToUpdate.red < 0) {
 			brushToUpdate.red += 256;
 		}
 		brushToUpdate.green = newBrush.green % 256;
-		if(brushToUpdate.green < 0){
+		if (brushToUpdate.green < 0) {
 			brushToUpdate.green += 256;
 		}
 		brushToUpdate.blue = newBrush.blue % 256;
-		if(brushToUpdate.blue < 0){
+		if (brushToUpdate.blue < 0) {
 			brushToUpdate.blue += 256;
 		}
 		brushToUpdate.alpha = newBrush.alpha % 256;
-		if(brushToUpdate.alpha < 0){
+		if (brushToUpdate.alpha < 0) {
 			brushToUpdate.alpha += 256;
 		}
 	
@@ -360,7 +362,7 @@ public class PushBrush extends PApplet {
 	private void paintBrush(BrushAttributes paintBrush) {
 		pushStyle();
 		smooth();
-
+	
 		fill(paintBrush.red, paintBrush.green, paintBrush.blue,
 				paintBrush.alpha);
 		noStroke();
@@ -368,89 +370,86 @@ public class PushBrush extends PApplet {
 		ellipse(paintBrush.x + (canvasWidth / 2), paintBrush.y + canvasYStart
 				+ (canvasHeight / 2), paintBrush.radius * 2,
 				paintBrush.radius * 2);
-
+	
 		noSmooth();
 		popStyle();
 	}
 	
-	
 	/**
 	 * Tests each main screen button to see if it was clicked.
 	 * 
-	 * @return true if draw() needs to return
-	 * 		   false if draw() can continue
+	 * @return true if draw() needs to return false if draw() can continue
 	 */
 	private boolean mainScreenButtonListener() {
-		if(brushCodeButton.clicked()){
+		if (brushCodeButton.clicked()) {
 			// Capture canvas image before going to text area screen
 			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-			
+	
 			codeTextArea.setText(ga.GetCurrentIndividualCode());
 			textScreen = true;
 			mainScreen = false;
 			return true;
 		}
-		
-		if(enterCodeButton.clicked()){
+	
+		if (enterCodeButton.clicked()) {
 			// Capture canvas image before going to text area screen
 			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-			
+	
 			codeTextArea.setText("");
 			textScreen = true;
 			mainScreen = false;
 			return true;
 		}
-		
-		if(bestBrushPaintButton.clicked()){
-			if(ga.GetGenerationCount() <= 0){
+	
+		if (bestBrushPaintButton.clicked()) {
+			if (ga.GetGenerationCount() <= 0) {
 				showGenerationZeroError();
 				return false;
 			}
-			
+	
 			// Capture canvas image before going to text area screen
 			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
 			freeDrawProgram = ga.GetPrevGenBestIndividual()._program;
-			
+	
 			// Reset some necessary parameters
 			background(0);
-			if(MOUSE_INTERACTION_ENABLED){
-				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-						initb, initalpha, inittimeStep, true);
+			if (MOUSE_INTERACTION_ENABLED) {
+				freeDrawBrush = new BrushAttributes(initx, inity, initradius,
+						initr, initg, initb, initalpha, inittimeStep, true);
+			} else {
+				freeDrawBrush = new BrushAttributes(initx, inity, initradius,
+						initr, initg, initb, initalpha, inittimeStep);
 			}
-			else {
-				freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-						initb, initalpha, inittimeStep);
-			}
-			
+	
 			freeDrawScreen = true;
 			mainScreen = false;
 			return true;
 		}
-		
-		if(bestBrushCodeButton.clicked()){
-			if(ga.GetGenerationCount() <= 0){
+	
+		if (bestBrushCodeButton.clicked()) {
+			if (ga.GetGenerationCount() <= 0) {
 				showGenerationZeroError();
 				return false;
 			}
-			
+	
 			// Capture canvas image before going to text area screen
 			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-			
+	
 			codeTextArea.setText(ga.GetPrevGenBestIndividual().toString());
 			textScreen = true;
 			mainScreen = false;
 			return true;
 		}
-		
+	
 		if (helpButton.clicked()) {
 			// Capture canvas image before going to instructions screen
 			imgCanvas = get(0, canvasYStart, canvasWidth, canvasHeight);
-			
+	
 			instructionsScreen = true;
 			mainScreen = false;
 			return true;
 		}
-		
+	
 		pausePlayButton.checkForClick();
 	
 		if (fitnessBar.clicked()) {
@@ -466,7 +465,7 @@ public class PushBrush extends PApplet {
 	 */
 	private void drawNormalMainScreen() {
 		// Print brush number of times equal to paintsPerFrame
-		
+	
 		if (!pausePlayButton.isPaused()) {
 			for (int i = 0; i < paintsPerFrame; i++) {
 				if (MOUSE_INTERACTION_ENABLED) {
@@ -482,7 +481,7 @@ public class PushBrush extends PApplet {
 						brush.mouse_pressed = false;
 					}
 				}
-				
+	
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrush(brush);
 	
@@ -491,7 +490,7 @@ public class PushBrush extends PApplet {
 				paintBrush(brush);
 			}
 		}
-		
+	
 		// //////// Create the header //////////
 		fill(headerBackgroundColor);
 		noStroke();
@@ -521,8 +520,7 @@ public class PushBrush extends PApplet {
 		text("best", width - 80, headerHeight - 5);
 	
 		/*
-		 * // Used to display current rating value
-		 * float normalizedSliderPos =
+		 * // Used to display current rating value float normalizedSliderPos =
 		 * fitnessBar.getValue(); int displaySliderPos = (int)
 		 * ((normalizedSliderPos * (maxFitness - minFitness)) + minFitness);
 		 * textAlign(RIGHT); textFont(fontTextBold); text(displaySliderPos, 580,
@@ -540,8 +538,8 @@ public class PushBrush extends PApplet {
 				+ ga.GetPopulationSize(), 220, footerYStart + 23);
 	
 		textAlign(LEFT);
-		text("Time Step: " + ((int)brush.t), 450, footerYStart + 23);
-		
+		text("Time Step: " + ((int) brush.t), 450, footerYStart + 23);
+	
 		// Text for best brush
 		textAlign(LEFT);
 		textFont(fontTextBold);
@@ -553,11 +551,11 @@ public class PushBrush extends PApplet {
 		enterCodeButton.render();
 		bestBrushPaintButton.render();
 		bestBrushCodeButton.render();
-		
+	
 		pausePlayButton.render();
-		
+	
 		// Generation Zero Error
-		if(genZeroError && ga.GetGenerationCount() <= 0){
+		if (genZeroError && ga.GetGenerationCount() <= 0) {
 			showGenerationZeroError();
 		}
 	}
@@ -570,9 +568,9 @@ public class PushBrush extends PApplet {
 			image(imgCanvas, 0, canvasYStart);
 			return;
 		}
-		
+	
 		background(headerBackgroundColor);
-		
+	
 		// Title
 		fill(0);
 		textAlign(CENTER);
@@ -589,14 +587,14 @@ public class PushBrush extends PApplet {
 		mainScreenButton.render();
 	}
 	
-	private void drawFitnessBarClicked() {			
+	private void drawFitnessBarClicked() {
 		// NOTE: Fitness ranges from minFitness to maxFitness, where lower
 		// is better. This is because PshGP uses errors instead of fitness,
 		// where lower error is better.
 	
 		float fitness = maxFitness
 				- ((fitnessBar.getValue() * (maxFitness - minFitness)) + minFitness);
-		
+	
 		try {
 			ga.RunUntilHumanEvaluation(fitness);
 		} catch (Exception e) {
@@ -608,42 +606,40 @@ public class PushBrush extends PApplet {
 		background(0);
 		pausePlayButton.play();
 		imgCanvas = createImage(canvasWidth, canvasHeight, RGB);
-		if(MOUSE_INTERACTION_ENABLED){
+		if (MOUSE_INTERACTION_ENABLED) {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
 					initb, initalpha, inittimeStep, true);
-		}
-		else {
+		} else {
 			brush = new BrushAttributes(initx, inity, initradius, initr, initg,
 					initb, initalpha, inittimeStep);
 		}
 	}
 	
 	private void drawTextScreen() {
-		if(codeBackToMainButton.clicked()){
+		if (codeBackToMainButton.clicked()) {
 			textScreen = false;
 			mainScreen = true;
 			illegalBrushError = false;
 	
-			codeTextAreaVisible = false;
+			//codeTextAreaVisible = false;
 			this.remove(codeTextArea);
 			this.validate();
-			
+	
 			image(imgCanvas, 0, canvasYStart);
 			return;
 		}
-		if(codeViewBrushButton.clicked()){
+		if (codeViewBrushButton.clicked()) {
 			// First, test that input text is a legal Push program
 			String inputProgram = codeTextArea.getText();
 			boolean programIsLegal = checkForLegalPushProgram(inputProgram);
-			if(!programIsLegal){
-				illegalBrushError = true;	
-			}
-			else{
+			if (!programIsLegal) {
+				illegalBrushError = true;
+			} else {
 				illegalBrushError = false;
 				textScreen = false;
 				freeDrawScreen = true;
 	
-				codeTextAreaVisible = false;
+				//codeTextAreaVisible = false;
 				this.remove(codeTextArea);
 				this.validate();
 	
@@ -654,53 +650,61 @@ public class PushBrush extends PApplet {
 							.println("There was an error initializing a user-input program.");
 					System.out.println(e);
 				}
-				
+	
 				// Reset some necessary parameters
 				background(0);
-				if(MOUSE_INTERACTION_ENABLED){
-					freeDrawBrush = new BrushAttributes(initx, inity, initradius, initr, initg,
-							initb, initalpha, inittimeStep, true);
+				if (MOUSE_INTERACTION_ENABLED) {
+					freeDrawBrush = new BrushAttributes(initx, inity,
+							initradius, initr, initg, initb, initalpha,
+							inittimeStep, true);
+				} else {
+					freeDrawBrush = new BrushAttributes(initx, inity,
+							initradius, initr, initg, initb, initalpha,
+							inittimeStep);
 				}
-				else {
-					freeDrawBrush= new BrushAttributes(initx, inity, initradius, initr, initg,
-							initb, initalpha, inittimeStep);
-				}
-				
+	
 				return;
 			}
 		}
-		
+	
 		background(headerBackgroundColor);
+	
+		if(!codeTextArea.isShowing()){
+			this.add(codeTextArea);
+			this.validate();
+		}
 		
-		if(!codeTextAreaVisible){
+		/*//Old way of making sure to display text area
+		if (!codeTextAreaVisible) {
 			this.add(codeTextArea);
 			this.validate();
 			codeTextAreaVisible = true;
 		}
+		*/
 	
 		// Notes
-		String notesText = "    You can copy and paste Push code here to save" +
-				" and load brush code. This is useful if you display the code" +
-				" of a brush you like, and then later want to see it again" +
-				" or show someone. Just paste in the code, and click \"Paint" +
-				" Using This Code\".";
+		String notesText = "    You can copy and paste Push code here to save"
+				+ " and load brush code. This is useful if you display the code"
+				+ " of a brush you like, and then later want to see it again"
+				+ " or show someone. Just paste in the code, and click \"Paint"
+				+ " Using This Code\".";
 		textFont(fontTextBold);
 		textAlign(LEFT);
 		fill(0);
 		text(notesText, 20, 500, width - 40, 150);
-		
+	
 		// Illegal Push Code Error
-		if(illegalBrushError){
+		if (illegalBrushError) {
 			textFont(fontTextBold);
 			textAlign(CENTER);
-			fill(255,0,0);
+			fill(255, 0, 0);
 			text("Entered text is not a legal Push program.", width / 2, 650);
 		}
 	
 		// Buttons
 		codeViewBrushButton.render();
 		codeBackToMainButton.render();
-		
+	
 	}
 	
 	private void drawFreeDrawScreen() {
@@ -716,17 +720,17 @@ public class PushBrush extends PApplet {
 			freeDrawScreen = false;
 			textScreen = true;
 			freeDrawPausePlayButton.play();
-			
+	
 			codeTextArea.setText(freeDrawProgram.toString());
 			return;
 		}
-		
+	
 		freeDrawPausePlayButton.checkForClick();
-		
+	
 		// Print brush number of times equal to paintsPerFrame
 		if (!freeDrawPausePlayButton.isPaused()) {
 			for (int i = 0; i < paintsPerFrame; i++) {
-				if(MOUSE_INTERACTION_ENABLED){
+				if (MOUSE_INTERACTION_ENABLED) {
 					if (mouseX >= 0 && mouseX < width && mouseY >= canvasYStart
 							&& mouseY <= canvasYStart + canvasHeight) {
 						freeDrawBrush.mouse_x = mouseX - (width / 2);
@@ -739,17 +743,17 @@ public class PushBrush extends PApplet {
 						freeDrawBrush.mouse_pressed = false;
 					}
 				}
-				
+	
 				// Get the next brush from the current individual
 				BrushAttributes newBrush = ga.GetNextBrushFromProgram(
 						freeDrawBrush, freeDrawProgram);
-				
+	
 				// Update and paint the next brush
 				updateBrush(freeDrawBrush, newBrush);
 				paintBrush(freeDrawBrush);
 			}
 		}
-		
+	
 		// //////// Create the header //////////
 		fill(headerBackgroundColor);
 		noStroke();
@@ -766,18 +770,18 @@ public class PushBrush extends PApplet {
 		fill(headerBackgroundColor);
 		noStroke();
 		rect(0, footerYStart, width, footerHeight);
-		
+	
 		// Display information
 		textAlign(LEFT);
 		textFont(fontTextBold);
 		fill(0);
-		text("Time Step: " + ((int)freeDrawBrush.t), 450, footerYStart + 23);
-		
+		text("Time Step: " + ((int) freeDrawBrush.t), 450, footerYStart + 23);
+	
 		// Buttons
 		codeBackToMainButton.render();
 		freeBrushCodeButton.render();
 		freeDrawPausePlayButton.render();
-		
+	
 	}
 	
 	/**
@@ -785,47 +789,47 @@ public class PushBrush extends PApplet {
 	 */
 	private void showGenerationZeroError() {
 		genZeroError = true;
-		
+	
 		pushStyle();
 		fill(255, 0, 0);
 		textFont(fontTextBold);
-		text("Wait Until Gen 1", bestBrushCodeButton.x
-				+ bestBrushCodeButton.w + 10, height - 14);
+		text("Wait Until Gen 1", bestBrushCodeButton.x + bestBrushCodeButton.w
+				+ 10, height - 14);
 	
 		popStyle();
 	}
 	
-	
 	/**
 	 * Checks to make sure the input string represents a legal Push program.
+	 * 
 	 * @param inputProgram
 	 * @return
 	 */
 	private boolean checkForLegalPushProgram(String inProgram) {
 		int unmatchedLeftParen = 0;
 		inProgram = inProgram.trim();
-		
-		if(inProgram.length() < 2){
+	
+		if (inProgram.length() < 2) {
 			return false;
 		}
-		
-		for(int i = 0; i < inProgram.length(); i++){
+	
+		for (int i = 0; i < inProgram.length(); i++) {
 			char c = inProgram.charAt(i);
-			if(c == '('){
+			if (c == '(') {
 				unmatchedLeftParen++;
 			}
-			if(c == ')'){
+			if (c == ')') {
 				unmatchedLeftParen--;
 			}
-			if(i + 1 < inProgram.length() && unmatchedLeftParen <= 0){
+			if (i + 1 < inProgram.length() && unmatchedLeftParen <= 0) {
 				return false;
 			}
 		}
-		
-		if (unmatchedLeftParen == 0){
+	
+		if (unmatchedLeftParen == 0) {
 			return true;
 		}
-		
+	
 		return false;
 	}
 	
@@ -890,14 +894,14 @@ public class PushBrush extends PApplet {
 		int y = height - 70;
 		int textH = 18;
 	
-		brushCodeButton = new TextButton(this, fontTextBold, buttonText, x,
-				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+		brushCodeButton = new TextButton(this, fontTextBold, buttonText, x, y,
+				buttonxPadding, buttonyPadding, textH, buttonborderColor,
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 	}
 	
 	private void setupenterCodeButton() {
-		String textHelp = "Enter Code For Brush";//"Show Best Evolved Code";
+		String textHelp = "Enter Code For Brush";// "Show Best Evolved Code";
 	
 		int x = brushCodeButton.x + brushCodeButton.w + 10;
 		int y = height - 70;
@@ -920,7 +924,7 @@ public class PushBrush extends PApplet {
 				buttonxPadding, buttonyPadding, textH, buttonborderColor,
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
-		
+	
 		helpButton.x = width - 10 - helpButton.w;
 	}
 	
@@ -928,13 +932,13 @@ public class PushBrush extends PApplet {
 		String buttonText = "Paint";
 	
 		textFont(fontTextBold);
-		
-		int x = 20 + (int)textWidth("Best Brush of Previous Generation: ");
+	
+		int x = 20 + (int) textWidth("Best Brush of Previous Generation: ");
 		int y = height - 35;
 		int textH = 18;
 	
-		bestBrushPaintButton = new TextButton(this, fontTextBold, buttonText, x,
-				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+		bestBrushPaintButton = new TextButton(this, fontTextBold, buttonText,
+				x, y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 	}
@@ -973,8 +977,8 @@ public class PushBrush extends PApplet {
 		int y = height - 35;
 		int textH = 18;
 	
-		codeBackToMainButton = new TextButton(this, fontTextBold, buttonText, x,
-				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
+		codeBackToMainButton = new TextButton(this, fontTextBold, buttonText,
+				x, y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
 	}
@@ -990,21 +994,21 @@ public class PushBrush extends PApplet {
 				y, buttonxPadding, buttonyPadding, textH, buttonborderColor,
 				buttontextColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
-		
+	
 		freeBrushCodeButton.x = (width / 2) - (freeBrushCodeButton.w / 2);
 	}
 	
 	private void setuppausePlayButton() {
 		int x = width - 55;
 		int y = 40;
-		
+	
 		int playColor = buttontextColor;
 		int pauseColor = color(120);
 	
 		pausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
 				pauseColor, playColor, buttonbackgroundColor,
 				buttonbackgroundColorHover, buttonbackgroundColorPress);
-		
+	
 		pausePlayButton.play();
 	
 	}
@@ -1012,14 +1016,15 @@ public class PushBrush extends PApplet {
 	private void setupfreeDrawPausePlayButton() {
 		int x = width - 55;
 		int y = 40;
-		
+	
 		int playColor = buttontextColor;
 		int pauseColor = color(120);
 	
-		freeDrawPausePlayButton = new PausePlayButton(this, x, y, buttonborderColor,
-				pauseColor, playColor, buttonbackgroundColor,
-				buttonbackgroundColorHover, buttonbackgroundColorPress);
-		
+		freeDrawPausePlayButton = new PausePlayButton(this, x, y,
+				buttonborderColor, pauseColor, playColor,
+				buttonbackgroundColor, buttonbackgroundColorHover,
+				buttonbackgroundColorPress);
+	
 		freeDrawPausePlayButton.play();
 	
 	}
