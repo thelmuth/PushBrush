@@ -18,7 +18,7 @@ public class PopBar {
 	boolean dragging;
 	boolean clickedButton;
 
-	PopBar(PApplet inParent, int inX, int inY, int inW, int inH,
+	public PopBar(PApplet inParent, int inX, int inY, int inW, int inH,
 			boolean inDisplayTicks) {
 		parent = inParent;
 
@@ -43,7 +43,7 @@ public class PopBar {
 
 	}
 
-	void render() {
+	public void render() {
 		parent.pushStyle();
 		parent.smooth();
 		
@@ -90,18 +90,18 @@ public class PopBar {
 	 * Returns a value in [0,1] representing the normalized position of the bar
 	 * on the slide.
 	 */
-	float getValue() {
+	public float getValue() {
 		return ((float) buttonLoc - x) / (float) w;
 	}
 
-	void pressed() {
+	public void pressed() {
 		if (mouseOverPopBar()) {
 			dragging = true;
 			clickedButton = false;
 		}
 	}
 
-	void released() {
+	public void released() {
 		if (mouseOverPopBar() && dragging) {
 			clickedButton = true;
 		}
@@ -118,7 +118,7 @@ public class PopBar {
 		return false;
 	}
 	
-	boolean mouseOverPopBar() {
+	public boolean mouseOverPopBar() {
 		return (parent.mouseX > x - (h/2)) && (parent.mouseX < x + w + (h/2))
 				&& (parent.mouseY > y) && (parent.mouseY < y + h);
 	}

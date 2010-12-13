@@ -13,7 +13,7 @@ public class PausePlayButton {
 	private boolean dragging, clickedButton;
 	private boolean paused;
 
-	PausePlayButton(PApplet inParent, int inX, int inY, int inBorderColor,
+	public PausePlayButton(PApplet inParent, int inX, int inY, int inBorderColor,
 			int inPauseColor, int inPlayColor, int inBackgroundColor,
 			int inBackgroundColorHover, int inBackgroundColorPress) {
 
@@ -36,7 +36,7 @@ public class PausePlayButton {
 		paused = false;
 	}
 
-	void render() {
+	public void render() {
 		parent.pushStyle();
 
 		// Draw box
@@ -73,14 +73,14 @@ public class PausePlayButton {
 		parent.popStyle();
 	}
 
-	void pressed() {
+	public void pressed() {
 		if (mouseHover()) {
 			dragging = true;
 			clickedButton = false;
 		}
 	}
 
-	void released() {
+	public void released() {
 		if (mouseHover() && dragging) {
 			clickedButton = true;
 		}

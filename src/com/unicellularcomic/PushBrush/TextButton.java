@@ -8,15 +8,17 @@ public class TextButton {
 	PApplet parent;
 	PFont font;
 
-	String textStr;
+	public String textStr;
 	
-	int x, y, w, h, xPadding, yPadding;
+	public int x, y;
+	public int w;
+	int h, xPadding, yPadding;
 	int borderColor, textColor, backgroundColor, backgroundColorHover;
 	int backgroundColorPress;
 	
 	private boolean dragging, clickedButton ;
 
-	TextButton(PApplet inParent, PFont inFont, String inText, int inX, int inY,
+	public TextButton(PApplet inParent, PFont inFont, String inText, int inX, int inY,
 			int inXPadding, int inYPadding, int inTextHeight,
 			int inBorderColor, int inTextColor, int inBackgroundColor,
 			int inBackgroundColorHover, int inBackgroundColorPress) {
@@ -43,7 +45,7 @@ public class TextButton {
 		clickedButton = false;
 	}
 
-	void render() {
+	public void render() {
 		parent.pushStyle();
 
 		// Draw box
@@ -66,14 +68,14 @@ public class TextButton {
 		parent.popStyle();
 	}
 
-	void pressed() {
+	public void pressed() {
 		if (mouseHover()) {
 			dragging = true;
 			clickedButton = false;
 		}
 	}
 
-	void released() {
+	public void released() {
 		if (mouseHover() && dragging) {
 			clickedButton = true;
 		}

@@ -15,7 +15,7 @@ public class HorizontalSlider {
 	boolean dragging;
 	int draggingPointOnBar;
 
-	HorizontalSlider(PApplet inParent, int inX, int inY, int inW, int inH,
+	public HorizontalSlider(PApplet inParent, int inX, int inY, int inW, int inH,
 			int inBarW, int inLineColor, int inBarColor, int inBarColorHover,
 			int inBarColorPressed) {
 		parent = inParent;
@@ -36,7 +36,7 @@ public class HorizontalSlider {
 		dragging = false;
 	}
 
-	void render() {
+	public void render() {
 		parent.pushStyle();
 
 		// Draw slider lines
@@ -77,18 +77,18 @@ public class HorizontalSlider {
 	 * Returns a value in [0,1] representing the normalized position of the bar
 	 * on the slide.
 	 */
-	float getValue() {
+	public float getValue() {
 		return (float) barPos / (float) sliderLength;
 	}
 	
 	/**
 	 * Resets the slider's bar to half.
 	 */
-	void resetSlider(){
+	public void resetSlider(){
 		barPos = sliderLength / 2;
 	}
 
-	void pressed() {
+	public void pressed() {
 		if (mouseOverBar()) {
 			dragging = true;
 			draggingPointOnBar = parent.mouseX - x - barPos;
@@ -100,11 +100,11 @@ public class HorizontalSlider {
 		}
 	}
 
-	void released() {
+	public void released() {
 		dragging = false;
 	}
 
-	void dragged() {
+	public void dragged() {
 		if (dragging) {
 			barPos = PApplet.constrain(parent.mouseX - x - draggingPointOnBar,
 					0, w - barW);
